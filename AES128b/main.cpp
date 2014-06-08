@@ -184,12 +184,10 @@ void Decrypt(word8 data[4][4], word8 rk[11][4][4]) {
 }
 
 
-int main()
+void EncDecTest()
 {
 	word8 k[4][4], ek[11][4][4];
-	/*word8 data[4][4];
 
-	memset(data, 0, sizeof(word8) * 16);*/
 	memset(k, 0, sizeof(word8) * 16);
 
 	KeyExpansion(k, ek);
@@ -199,13 +197,16 @@ int main()
 
 	//Decrypt(data, ek);
 	//showLayer(data);
-	
+
 	unsigned char *data;
 	data = (unsigned char*)malloc(16 * 100);
 	memset(data, 0, 16 * 100);
 	for (int i = 0; i < 16; i++)
 		data[i] = i;
 	AES128AmpEncrypt(data, 16 * 100, ek);
+
+	AES128AmpDecrypt(data, 16 * 100, ek);
+
 
 	word8 d2[4][4];
 	memcpy(d2, data, 16);
@@ -215,10 +216,75 @@ int main()
 
 	/*int l = 0;
 	for (int i = 0; i < 100; i++){
-		for (int j = 0; j < 16; j++)
-			printf("%d ", data[l++]);
-		getchar();
+	for (int j = 0; j < 16; j++)
+	printf("%d ", data[l++]);
+	getchar();
 	}*/
 
+
+}
+
+void AcceleratorInfo()
+{
+	bool show_all = true;
+	bool old_format = false;
+	
+
+	std::vector<accelerator> accls = accelerator::get_all();
+	if (!show_all)
+	{
+		accls.erase(std::remove_if(accls.begin(), accls.end(), [](accelerator& a)
+		{
+			return (a.device_path == accelerator::cpu_accelerator) || (a.device_path == accelerator::direct3d_ref);
+		}), accls.end());
+	}
+
+	if (accls.empty())
+	{
+		std::wcout << "No accelerators found that are compatible with C++ AMP" << std::endl << std::endl;
+		return;
+	}
+	std::cout << "Show " << (show_all ? "all " : "") << "AMP Devices (";
+#if defined(_DEBUG)
+	std::cout << "DEBUG";
+#else
+	std::cout << "RELEASE";
+#endif
+	std::cout << " build)" << std::endl;
+	std::wcout << "Found " << accls.size()
+		<< " accelerator device(s) that are compatible with C++ AMP:" << std::endl;
+	int n = 0;
+	if (old_format)
+	{
+		std::for_each(accls.cbegin(), accls.cend(), [=, &n](const accelerator& a)
+		{
+			std::wcout << "  " << ++n << ": " << a.description
+				<< ", has_display=" << (a.has_display ? "true" : "false")
+				<< ", is_emulated=" << (a.is_emulated ? "true" : "false")
+				<< std::endl;
+		});
+		std::wcout << std::endl;
+		return;
+	}
+
+	std::for_each(accls.cbegin(), accls.cend(), [=, &n](const accelerator& a)
+	{
+		std::wcout << "  " << ++n << ": " << a.description << " "
+			<< std::endl << "       device_path                       = " << a.device_path
+			<< std::endl << "       dedicated_memory                  = " <<  float(a.dedicated_memory) / (1024.0f * 1024.0f) << " Mb"
+			<< std::endl << "       has_display                       = " << (a.has_display ? "true" : "false")
+			<< std::endl << "       is_debug                          = " << (a.is_debug ? "true" : "false")
+			<< std::endl << "       is_emulated                       = " << (a.is_emulated ? "true" : "false")
+			<< std::endl << "       supports_double_precision         = " << (a.supports_double_precision ? "true" : "false")
+			<< std::endl << "       supports_limited_double_precision = " << (a.supports_limited_double_precision ? "true" : "false")
+			<< std::endl;
+	});
+}
+
+int main()
+{
+	//EncDecTest();
+	AcceleratorInfo();
 	getchar();
+
 }
