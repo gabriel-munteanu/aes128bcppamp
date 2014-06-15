@@ -1,24 +1,39 @@
-#include "mainAMP.h"
+#include "AES128AMP.h"
+
+#include <atlconv.h>
+#include <atlbase.h>
 
 
 struct Constants{
-	const unsigned int Logtable[256];
-	const unsigned int Alogtable[256];
-	const unsigned int S[256];
-	const unsigned int Si[256];
-	const unsigned int Key[11][4][4];
+	unsigned int Logtable[256];
+	unsigned int Alogtable[256];
+	unsigned int S[256];
+	unsigned int Si[256];
+	unsigned int Key[11][4][4];
 };
 
+std::vector<std::string> AES128AMP::GetAvailableProcessingUnits()
+{
+	std::vector<std::string> pus;
 
-int mul(unsigned int a, unsigned int b, const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp)
-{ /* multiply two elements of GF(256)  required for MixColumns and InvMixColumns */
+	_availableAccelerator = accelerator::get_all();
+	std::for_each(_availableAccelerator.cbegin(), _availableAccelerator.cend(), [=, &pus](const accelerator& a)
+	{
+		pus.push_back(std::string(CW2A(a.description.c_str())));
+	});
+
+	return pus;
+}
+
+
+int AES128AMP::mul(unsigned int a, unsigned int b, const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp) {
+	/* multiply two elements of GF(256)  required for MixColumns and InvMixColumns */
 
 	if (a && b) return alogtable[(logtable[a] + logtable[b]) % 255];
 	else return 0;
 }
 
-void AddRoundKey(unsigned int data[4][4], const unsigned int rk[4][4]) restrict(amp)
-{
+void AES128AMP::AddRoundKey(unsigned int data[4][4], const unsigned int rk[4][4]) restrict(amp) {
 	/* XOR corresponding text input and round key input bytes */
 	int i, j;
 	for (i = 0; i < 4; i++)
@@ -26,8 +41,7 @@ void AddRoundKey(unsigned int data[4][4], const unsigned int rk[4][4]) restrict(
 			data[i][j] ^= rk[i][j];
 }
 
-void SubBytes(unsigned int data[4][4], const unsigned int box[256]) restrict(amp)
-{
+void AES128AMP::SubBytes(unsigned int data[4][4], const unsigned int box[256]) restrict(amp) {
 	/* Replace every byte of the input by the byte at that place  in the non-linear S-box */
 	int i, j;
 	for (i = 0; i < 4; i++)
@@ -35,8 +49,7 @@ void SubBytes(unsigned int data[4][4], const unsigned int box[256]) restrict(amp
 			data[i][j] = box[data[i][j]];
 }
 
-void ShiftRows(unsigned int a[4][4], int d) restrict(amp)
-{
+void AES128AMP::ShiftRows(unsigned int a[4][4], int d) restrict(amp) {
 	/* Row 0 remains unchanged
 	* The other three rows are shifted at left by i*/
 	int tmp[4];
@@ -61,8 +74,7 @@ void ShiftRows(unsigned int a[4][4], int d) restrict(amp)
 	}
 }
 
-void MixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp)
-{
+void AES128AMP::MixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp) {
 	/* Mix the four bytes of every column in a linear way */
 	int b[4][4]; int i, j;
 	for (i = 0; i < 4; i++)
@@ -77,8 +89,7 @@ void MixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const u
 			a[i][j] = b[i][j];
 }
 
-void InvMixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp)
-{
+void AES128AMP::InvMixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp) {
 	/* Mix the four bytes of every column in a linear way
 	* This is the opposite operation of Mixcolumns */
 	int b[4][4];
@@ -96,12 +107,8 @@ void InvMixColumns(unsigned int a[4][4], const unsigned int alogtable[246], cons
 }
 
 
-//this method must receive the data array a multiple of 16
-//size = number of chars
-void AES128AmpEncrypt(unsigned char *data, long size, unsigned char key[11][4][4])
-{
-	array_view<unsigned int> d_data(size / 4, (unsigned int*)data);
-	extent<1> d_ext(size / 16);//for each 4 int(16 chars = 128bits) we need a thread
+
+void AES128AMP::AMPEncrypt(accelerator acc) {
 
 	const Constants constValues =
 	{
@@ -117,28 +124,30 @@ void AES128AmpEncrypt(unsigned char *data, long size, unsigned char key[11][4][4
 
 	};
 
-	for (int i = 0; i < 11 * 16; i++){
-		unsigned int x = (unsigned int)((unsigned char*)key)[i];
+	for (int i = 0; i < 11 * 16; i++) {
+		unsigned int x = (unsigned int)((unsigned char*)_expandedKey)[i];
 		((int*)constValues.Key)[i] = x;
 	}
 
+	array_view<unsigned int> d_data(_dataLength / 4, (unsigned int*)_data);
+	extent<1> d_ext(_dataLength / 16);//for each 4 int(16 chars = 128bits) we need a thread
 
-	parallel_for_each(d_ext, [=](index<1> idx) restrict(amp)
-	{
+
+	//the first parameter of the parallel_for_each specifies the accelerator that will run the code
+	parallel_for_each(acc.default_view, d_ext, [=](index<1> idx) restrict(amp) {
 		int d_pos = idx[0] * 4;
 		unsigned int matr[4][4];
-		
+
 		for (int i = 0; i < 4; i++)
 			for (int s = 0, j = 0; s <= 24; s += 8, j++)
 				matr[i][j] = (d_data[d_pos + i] >> s) & 0xFF;
 
-		
+
 		int r;
 		/* begin with a key addition */
 		AddRoundKey(matr, constValues.Key[0]);
 		/* ROUNDS-1 ordinary rounds */
-		for (r = 1; r < 10; r++)
-		{
+		for (r = 1; r < 10; r++) {
 			SubBytes(matr, constValues.S);
 			ShiftRows(matr, 0);
 			MixColumns(matr, constValues.Alogtable, constValues.Logtable);
@@ -147,7 +156,7 @@ void AES128AmpEncrypt(unsigned char *data, long size, unsigned char key[11][4][4
 		/* Last round is special : there is no MixColumns */
 		SubBytes(matr, constValues.S);
 		ShiftRows(matr, 0);
-		AddRoundKey(matr, constValues.Key[10]);		
+		AddRoundKey(matr, constValues.Key[10]);
 
 
 		//write back the matrix to its linear form
@@ -160,14 +169,7 @@ void AES128AmpEncrypt(unsigned char *data, long size, unsigned char key[11][4][4
 }
 
 
-//this method must receive the data array a multiple of 16
-//size = number of chars
-void AES128AmpDecrypt(unsigned char *data, long size, unsigned char key[11][4][4])
-{
-	array_view<unsigned int> d_data(size / 4, (unsigned int*)data);
-	extent<1> d_ext(size / 16);//for each 4 int(16 chars = 128bits) we need a thread
-
-	// TOCHECK: de we really need here to be const or it need to be inside the struct?
+void AES128AMP::AMPDecryption(accelerator acc) {
 	const Constants constValues =
 	{
 		//Logtable
@@ -182,14 +184,16 @@ void AES128AmpDecrypt(unsigned char *data, long size, unsigned char key[11][4][4
 
 	};
 
-	for (int i = 0; i < 11 * 16; i++){
-		unsigned int x = (unsigned int)((unsigned char*)key)[i];
+	for (int i = 0; i < 11 * 16; i++) {
+		unsigned int x = (unsigned int)((unsigned char*)_expandedKey)[i];
 		((int*)constValues.Key)[i] = x;
 	}
 
+	array_view<unsigned int> d_data(_dataLength / 4, (unsigned int*)_data);
+	extent<1> d_ext(_dataLength / 16);//for each 4 int(16 chars = 128bits) we need a thread
 
-	parallel_for_each(d_ext, [=](index<1> idx) restrict(amp)
-	{
+	//the first parameter of the parallel_for_each specifies the accelerator that will run the code
+	parallel_for_each(acc.default_view, d_ext, [=](index<1> idx) restrict(amp) {
 		int d_pos = idx[0] * 4;
 		unsigned int matr[4][4];
 
@@ -197,15 +201,14 @@ void AES128AmpDecrypt(unsigned char *data, long size, unsigned char key[11][4][4
 			for (int s = 0, j = 0; s <= 24; s += 8, j++)
 				matr[i][j] = (d_data[d_pos + i] >> s) & 0xFF;
 
-				
+
 		int r;
 		/* begin with a key addition */
 		AddRoundKey(matr, constValues.Key[10]);
 		SubBytes(matr, constValues.Si); ShiftRows(matr, 1);
 		/* RDUNDS-1 ordinary rounds */
 
-		for (r = 10 - 1; r > 0; r--)
-		{
+		for (r = 10 - 1; r > 0; r--) {
 			AddRoundKey(matr, constValues.Key[r]);
 			InvMixColumns(matr, constValues.Alogtable, constValues.Logtable);
 			SubBytes(matr, constValues.Si);
@@ -223,4 +226,21 @@ void AES128AmpDecrypt(unsigned char *data, long size, unsigned char key[11][4][4
 	});
 
 	d_data.synchronize();
+}
+
+void AES128AMP::Encrypt(unsigned int puIndex)
+{
+	if (puIndex < 0 || puIndex >= _availableAccelerator.size())
+		throw std::exception("Invalid Processing Unit index");
+
+	AMPEncrypt(_availableAccelerator[puIndex]);
+}
+
+void AES128AMP::Decrypt(unsigned int puIndex)
+{
+	if (puIndex < 0 || puIndex >= _availableAccelerator.size())
+		throw std::exception("Invalid Processing Unit index");
+
+	AMPDecryption(_availableAccelerator[puIndex]);
+
 }

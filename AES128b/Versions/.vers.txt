@@ -1,0 +1,1 @@
+v1 - crapa copilatorul probabil din cauza transmiterii de vectori catre functii. Nu as transmite toata structura intrucat ar copia-o la fiecare apel si nu ar fi prea eficient

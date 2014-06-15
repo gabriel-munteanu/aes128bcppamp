@@ -64,11 +64,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AES128Base.cpp" />
+    <ClCompile Include="AES128CPU.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="mainAMP.cpp" />
+    <ClCompile Include="AES128AMP.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mainAMP.h" />
+    <ClInclude Include="AES128AMP.h" />
+    <ClInclude Include="AES128Base.h" />
+    <ClInclude Include="AES128CPU.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt" />

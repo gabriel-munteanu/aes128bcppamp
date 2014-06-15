@@ -1,7 +1,27 @@
-ToDo:
+TODO:
 
 1. [Done] Implement encryption and decryption on GPU 
-2. Study about and implement key generation from a simple password
+2. [Done] Study about and implement key generation from a simple password
+	Soution: just copy the password and fill the rest of the key with NULL. If key >16 chars only the first 16 chars are used
 3. Check for memory limits
-4. Make it scale
+4. Use classes for implementation for a more modular code
 5. Implement performance test()
+
+
+Ideas:
+	- run test with chunks of data size of 2^n bytes
+	- for data <= 2mb it's not worth to run on GPU but maybe on CPU with AMP?
+	- for some scenarios we can use some hardcoded decisions even if the hardware is different(ideea above)
+Class:
+	- there will be a base class
+	- one implementation can have 'multiple computation ways'. AMP implementation will have computations ways as 
+many accelerators are found on the system. CPU implementations will have only one way
+	- there must be a function that return an array with function. Each function is a 'computation way'
+	- the base class will contain the performance test? or there will be another class?
+
+
+To think of:
+	- if there is no 'not emulated' accelerator it's worth trying all the tests? 
+
+Optimizations?
+	- use staging arrays instead of simple arrays http://blogs.msdn.com/b/nativeconcurrency/archive/2011/11/10/staging-arrays-in-c-amp.aspx
