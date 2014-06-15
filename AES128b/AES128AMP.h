@@ -1,10 +1,12 @@
+#pragma once
+
 #include <amp.h>
 #include "AES128Base.h"
 
 using namespace concurrency;
 
-class AES128AMP : AES128Base
-{
+class AES128AMP : public AES128Base {
+
 private:
 	std::vector<accelerator> _availableAccelerator;
 

@@ -12,11 +12,15 @@ struct Constants{
 	unsigned int Key[11][4][4];
 };
 
-std::vector<std::string> AES128AMP::GetAvailableProcessingUnits()
-{
+std::vector<std::string> AES128AMP::GetAvailableProcessingUnits() {
 	std::vector<std::string> pus;
 
-	_availableAccelerator = accelerator::get_all();
+	auto accs = accelerator::get_all();
+	for (int i = 0; i < accs.size(); i++)
+		//exclude CPU accelerator because it cannot be use for computation
+		if (accs[i].device_path != accelerator::cpu_accelerator)
+			_availableAccelerator.push_back(accs[i]);	
+
 	std::for_each(_availableAccelerator.cbegin(), _availableAccelerator.cend(), [=, &pus](const accelerator& a)
 	{
 		pus.push_back(std::string(CW2A(a.description.c_str())));
@@ -228,16 +232,14 @@ void AES128AMP::AMPDecryption(accelerator acc) {
 	d_data.synchronize();
 }
 
-void AES128AMP::Encrypt(unsigned int puIndex)
-{
+void AES128AMP::Encrypt(unsigned int puIndex) {
 	if (puIndex < 0 || puIndex >= _availableAccelerator.size())
 		throw std::exception("Invalid Processing Unit index");
 
 	AMPEncrypt(_availableAccelerator[puIndex]);
 }
 
-void AES128AMP::Decrypt(unsigned int puIndex)
-{
+void AES128AMP::Decrypt(unsigned int puIndex) {
 	if (puIndex < 0 || puIndex >= _availableAccelerator.size())
 		throw std::exception("Invalid Processing Unit index");
 

@@ -1,10 +1,12 @@
+#pragma once
+
 #include "AES128Base.h"
 
 typedef unsigned char word8;
 
 
-class AES128CPU : AES128Base
-{
+class AES128CPU : public AES128Base {
+
 private:
 	static word8 Logtable[256];
 	static word8 Alogtable[256];

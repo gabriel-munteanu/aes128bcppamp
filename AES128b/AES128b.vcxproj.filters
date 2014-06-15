@@ -27,6 +27,9 @@
     <ClCompile Include="AES128AMP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AESTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt" />
@@ -39,6 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AES128AMP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AESTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

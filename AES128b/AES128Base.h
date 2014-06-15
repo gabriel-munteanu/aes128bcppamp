@@ -4,12 +4,12 @@
 #include <string>
 
 
-class AES128Base
-{
+class AES128Base {
+
 private:
 
 protected:
-	unsigned char _key[16];
+	unsigned char _key[17];
 	unsigned char _expandedKey[11][4][4];
 	unsigned char *_data;
 	unsigned long _dataLength;

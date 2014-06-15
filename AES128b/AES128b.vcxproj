@@ -66,6 +66,7 @@
   <ItemGroup>
     <ClCompile Include="AES128Base.cpp" />
     <ClCompile Include="AES128CPU.cpp" />
+    <ClCompile Include="AESTest.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="AES128AMP.cpp" />
   </ItemGroup>
@@ -73,6 +74,7 @@
     <ClInclude Include="AES128AMP.h" />
     <ClInclude Include="AES128Base.h" />
     <ClInclude Include="AES128CPU.h" />
+    <ClInclude Include="AESTest.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt" />

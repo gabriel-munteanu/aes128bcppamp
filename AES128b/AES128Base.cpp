@@ -1,8 +1,7 @@
 #include "AES128Base.h"
 #include <math.h>
 
-AES128Base::AES128Base()
-{
+AES128Base::AES128Base() {
 	_data = NULL;
 	_dataLength = 0;
 }
@@ -50,6 +49,6 @@ void AES128Base::SetData(unsigned char *data, unsigned long length) {
 
 void AES128Base::SetKey(std::string key) {
 	memset(_key, 0, 16 * sizeof(unsigned char));
-	strcpy_s((char*)_key, key.size() < 16 ? key.size() : 16, key.c_str());
+	strcpy_s((char*)_key, (key.size() < 16 ? key.size() : 16) + 1, key.c_str());
 	KeyExpansion();
 }
