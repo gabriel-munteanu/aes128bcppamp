@@ -126,3 +126,19 @@ void AESAMPGPUMemoryTest() {
 
 	std::cout << "GPU Memory Test OK";
 }
+
+//This will test the parallel implementation on the CPU
+// I want to see if the curent process uses more than one CPU
+void AESCPUParallelTest() {
+	AES128CPU aesCPU;
+	unsigned int dataSize = 1024 * 1024 * 1024; //1GB of data
+
+	unsigned char *data = new unsigned char[dataSize];
+	memset(data, 0, dataSize);
+
+	aesCPU.SetKey(std::string((const char*)key));
+	aesCPU.SetData(data, dataSize);
+	aesCPU.Encrypt(1);//this is the parallel implementation
+
+	std::cout << "CPU Parallel implementatin Test OK";
+}

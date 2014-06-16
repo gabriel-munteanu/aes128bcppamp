@@ -16,16 +16,14 @@ std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
 	std::vector<ProcessingUnitInfo> pusInfo;
 
 	auto accs = accelerator::get_all();
-	for (int i = 0; i < accs.size(); i++)
+	for (auto &acc : accs)
 		//exclude CPU accelerator because it cannot be use for computation
 		//excluse Software Emulated Accelerator because it is very very slow and it's purpose is for debugging only
-		if (accs[i].device_path != accelerator::cpu_accelerator && accs[i].device_path !=accelerator::direct3d_ref)
-			_availableAccelerator.push_back(accs[i]);	
+		if (acc.device_path != accelerator::cpu_accelerator && acc.device_path != accelerator::direct3d_ref)
+			_availableAccelerator.push_back(acc);
 
-	std::for_each(_availableAccelerator.cbegin(), _availableAccelerator.cend(), [=, &pusInfo](const accelerator& a)
-	{
-		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), a.dedicated_memory, a.is_emulated));			
-	});
+	for (auto &a : _availableAccelerator)	
+		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), a.dedicated_memory, a.is_emulated));	
 
 	return pusInfo;
 }

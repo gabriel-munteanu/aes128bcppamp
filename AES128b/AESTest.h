@@ -10,3 +10,4 @@ void AESEncryptionTestAll();
 void AESDecryptionTestAll();
 
 void AESAMPGPUMemoryTest();
+void AESCPUParallelTest();

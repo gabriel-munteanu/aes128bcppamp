@@ -14,17 +14,22 @@ private:
 	static word8 Si[256];
 
 	static word8 mul(word8 a, word8 b);
-	static void AddRoundKey(word8 data[4][4], word8 rk[4][4]);
+	static void AddRoundKey(word8 data[4][4], word8 ek[4][4]);
 	static void SubBytes(word8 data[4][4], word8 box[256]);
-	static void ShiftRows(word8 a[4][4], word8 d);
-	static void MixColumns(word8 a[4][4]);
-	static void InvMixColumns(word8 a[4][4]);	
+	static void ShiftRows(word8 data[4][4], word8 d);
+	static void MixColumns(word8 data[4][4]);
+	static void InvMixColumns(word8 data[4][4]);	
 
 	void EncryptBlock(word8 block[4][4]);
 	void DecryptBlock(word8 block[4][4]);
 
-	void SequentialEncryption();
-	void SequentialDecryption();
+	static void SequentialEncryption(AES128CPU*, unsigned char*, unsigned long);
+	static void SequentialDecryption(AES128CPU*, unsigned char*, unsigned long);
+
+	std::vector<unsigned long> GetThreadsParitions();
+	void ParallelWork(void(*)(AES128CPU *, unsigned char*, unsigned long));
+	void ParallelEncryption();
+	void ParallelDecryption();
 
 public:
 	std::vector<ProcessingUnitInfo> GetAvailableProcessingUnits();

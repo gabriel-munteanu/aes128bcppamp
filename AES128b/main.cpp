@@ -4,9 +4,10 @@
 #include "AES128AMP.h"
 #include "AES128CPU.h"
 
-int main2()
+int main()
 {
-	AESAMPGPUMemoryTest();
+	//AESAMPGPUMemoryTest();
+	AESCPUParallelTest();
 
 	getchar();
 	return 0;

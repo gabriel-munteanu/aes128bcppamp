@@ -120,13 +120,13 @@
     <ClCompile Include="AESTest.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="AES128AMP.cpp" />
-    <ClCompile Include="WinCPU.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES128AMP.h" />
     <ClInclude Include="AES128Base.h" />
     <ClInclude Include="AES128CPU.h" />
     <ClInclude Include="AESTest.h" />
+    <ClInclude Include="WindowsHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt" />
