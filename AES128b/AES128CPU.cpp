@@ -185,8 +185,8 @@ std::vector<unsigned long> AES128CPU::GetThreadsParitions() {
 
 	unsigned long remainingLength = _dataLength;
 	for (int i = 0; i < availableProcs - 1; i++) {
-		partitions.push_back(partitionSize);
-		remainingLength -= partitionSize;
+		partitions.push_back(partitionSize * 16);
+		remainingLength -= partitionSize * 16;
 	}
 	partitions.push_back(remainingLength);//last cpu will process what remains
 
