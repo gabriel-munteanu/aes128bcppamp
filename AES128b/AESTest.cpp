@@ -118,6 +118,7 @@ void AESAMPGPUMemoryTest() {
 		aesAMP.GetAvailableProcessingUnits();
 
 		aesAMP.Encrypt(0);//this is the first GPU, or the only one if there is a GPU installed on the sistem.
+		delete data;
 	}
 	catch (std::exception &ex) {//out_of_memory: Failed to create buffer
 		std::cout << ex.what();
@@ -140,5 +141,6 @@ void AESCPUParallelTest() {
 	aesCPU.SetData(data, dataSize);
 	aesCPU.Encrypt(1);//this is the parallel implementation
 
+	delete data;
 	std::cout << "CPU Parallel implementatin Test OK";
 }
