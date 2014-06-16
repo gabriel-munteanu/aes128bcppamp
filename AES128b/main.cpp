@@ -6,14 +6,7 @@
 
 int main()
 {
-	AES128AMP aesAMP;
-	AES128CPU aesCPU;
-
-	std::cout << "Testing AMP Encryption implementation\r\n";
-	AESEncryptionTest(&aesAMP);
-
-	std::cout << "Testing CPU Encryption implementation\r\n";
-	AESEncryptionTest(&aesCPU);
+	AESAMPGPUMemoryTest();
 
 	getchar();
 }

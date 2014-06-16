@@ -18,21 +18,21 @@ void ShowAsMatrix(unsigned char matr[4][4]) {
 	printf("\r\n");
 }
 
-void initInputForEnryption() {
+void initInput(const unsigned char *data) {
 	for (unsigned char *p = testBuffer; p < testBuffer + 16 * 1024; p += 16)
-		memcpy(p, inputData, 16);
+		memcpy(p, data, 16);
 }
 
-bool TestEncryptionResult() {
+bool TestResult(const unsigned char *againstData) {
 	for (unsigned char *p = testBuffer; p < testBuffer + 16 * 1024; p += 16) {
-		if (memcmp(p, outputData, 16) != 0) {
+		if (memcmp(p, againstData, 16) != 0) {
 			std::cout << "\r\nInvalid output. Index = " << (p - testBuffer) / 16 << "\r\n";
 
 			std::cout << "Actual result:\r\n";
-			ShowAsMatrix((unsigned char(*)[4])p);			
+			ShowAsMatrix((unsigned char(*)[4])p);
 
 			std::cout << "Expected result:\r\n";
-			ShowAsMatrix((unsigned char(*)[4])outputData);
+			ShowAsMatrix((unsigned char(*)[4])againstData);
 
 			return false;
 		}
@@ -49,14 +49,77 @@ void AESEncryptionTest(AES128Base* implementation) {
 	auto pu = implementation->GetAvailableProcessingUnits();
 	for (int i = 0; i < pu.size(); i++)
 	{
-		initInputForEnryption();
+		initInput(inputData);
 		std::cout << i << ". " << pu[i] << " ";
 
 		implementation->Encrypt(i);
 
-		if (TestEncryptionResult())
+		if (TestResult(outputData))
 			std::cout << "OK\r\n";
 
-		std::cout << "\r\n"; 		
+		std::cout << "\r\n";
 	}
+}
+
+
+void AESDecryptionTest(AES128Base* implementation){
+	implementation->SetKey(std::string((const char*)key));
+	implementation->SetData(testBuffer, 16 * 1024);
+
+	auto pu = implementation->GetAvailableProcessingUnits();
+	for (int i = 0; i < pu.size(); i++)
+	{
+		initInput(outputData);
+		std::cout << i << ". " << pu[i] << " ";
+
+		implementation->Decrypt(i);
+
+		if (TestResult(inputData))
+			std::cout << "OK\r\n";
+
+		std::cout << "\r\n";
+	}
+}
+
+void AESEncryptionTestAll() {
+	AES128AMP aesAMP;
+	AES128CPU aesCPU;
+
+	std::cout << "Testing AMP Encryption implementation\r\n";
+	AESEncryptionTest(&aesAMP);
+
+	std::cout << "Testing CPU Encryption implementation\r\n";
+	AESEncryptionTest(&aesCPU);
+}
+
+void AESDecryptionTestAll() {
+	AES128AMP aesAMP;
+	AES128CPU aesCPU;
+
+	std::cout << "Testing AMP Decryption implementation\r\n";
+	AESDecryptionTest(&aesAMP);
+
+	std::cout << "Testing CPU Decryption implementation\r\n";
+	AESDecryptionTest(&aesCPU);
+}
+
+//This test is for a NVIDIA GTX 480 which has 1.5 GB of memory
+void AESAMPGPUMemoryTest() {
+	AES128AMP aesAMP;
+	unsigned int dataSize = UINT_MAX / 2;
+	unsigned char *data = new unsigned char[dataSize];//2GB of data
+
+	memset(data, 0, dataSize);
+
+	aesAMP.SetKey(std::string((const char*)key));
+	aesAMP.SetData(data, dataSize);
+	try {
+		aesAMP.Encrypt(0);//this is the first GPU, or the only one if there is a GPU installed on the sistem.
+	}
+	catch (std::exception &ex) {
+		std::cout << ex.what();
+		return;
+	}
+	
+	std::cout << "GPU Memory Test OK";
 }
