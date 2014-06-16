@@ -6,14 +6,20 @@ TODO:
 3. [Done] Check for memory limits
 	Conclusion: I, as programmer, must take care of the maximum memory allocated on the device
 4. [Done] Use classes for implementation for a more modular code
-5. Write a parallel implementation on CPU
-6. Implement performance test()
+5. [Done] Write a parallel implementation on CPU
+6. Study about TDR: Timeout Detection & Recovery
+7. Implement performance test with ranking and limits
+8. Memmory manangement
 
+
+98. Compare against real implementation(libCrypto?)
+99. Use all available resources for one computation
 
 Ideas:
 	- run test with chunks of data size of 2^n bytes
 	- for data <= 2mb it's not worth to run on GPU but maybe on CPU with AMP?
 	- for some scenarios we can use some hardcoded decisions even if the hardware is different(ideea above)
+
 Class:
 	- there will be a base class
 	- one implementation can have 'multiple computation ways'. AMP implementation will have computations ways as 
