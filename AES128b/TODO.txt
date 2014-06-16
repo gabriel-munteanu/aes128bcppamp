@@ -5,8 +5,9 @@ TODO:
 	Soution: just copy the password and fill the rest of the key with NULL. If key >16 chars only the first 16 chars are used
 3. [Done] Check for memory limits
 	Conclusion: I, as programmer, must take care of the maximum memory allocated on the device
-4. Use classes for implementation for a more modular code
-5. Implement performance test()
+4. [Done] Use classes for implementation for a more modular code
+5. Write a parallel implementation on CPU
+6. Implement performance test()
 
 
 Ideas:

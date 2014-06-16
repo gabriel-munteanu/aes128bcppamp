@@ -120,6 +120,7 @@
     <ClCompile Include="AESTest.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="AES128AMP.cpp" />
+    <ClCompile Include="WinCPU.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES128AMP.h" />
