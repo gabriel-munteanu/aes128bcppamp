@@ -50,7 +50,7 @@ void AESEncryptionTest(AES128Base* implementation) {
 	for (int i = 0; i < pu.size(); i++)
 	{
 		initInput(inputData);
-		std::cout << i << ". " << pu[i] << " ";
+		std::cout << i << ". " << pu[i].name << " ";
 
 		implementation->Encrypt(i);
 
@@ -70,7 +70,7 @@ void AESDecryptionTest(AES128Base* implementation){
 	for (int i = 0; i < pu.size(); i++)
 	{
 		initInput(outputData);
-		std::cout << i << ". " << pu[i] << " ";
+		std::cout << i << ". " << pu[i].name << " ";
 
 		implementation->Decrypt(i);
 

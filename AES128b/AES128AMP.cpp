@@ -12,21 +12,22 @@ struct Constants{
 	unsigned int Key[11][4][4];
 };
 
-std::vector<std::string> AES128AMP::GetAvailableProcessingUnits() {
-	std::vector<std::string> pus;
+std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
+	std::vector<ProcessingUnitInfo> pusInfo;
 
 	auto accs = accelerator::get_all();
 	for (int i = 0; i < accs.size(); i++)
 		//exclude CPU accelerator because it cannot be use for computation
-		if (accs[i].device_path != accelerator::cpu_accelerator)
+		//excluse Software Emulated Accelerator because it is very very slow and it's purpose is for debugging only
+		if (accs[i].device_path != accelerator::cpu_accelerator && accs[i].device_path !=accelerator::direct3d_ref)
 			_availableAccelerator.push_back(accs[i]);	
 
-	std::for_each(_availableAccelerator.cbegin(), _availableAccelerator.cend(), [=, &pus](const accelerator& a)
+	std::for_each(_availableAccelerator.cbegin(), _availableAccelerator.cend(), [=, &pusInfo](const accelerator& a)
 	{
-		pus.push_back(std::string(CW2A(a.description.c_str())));
+		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), a.dedicated_memory, a.is_emulated));			
 	});
 
-	return pus;
+	return pusInfo;
 }
 
 

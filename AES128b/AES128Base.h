@@ -3,6 +3,18 @@
 #include <vector>
 #include <string>
 
+struct ProcessingUnitInfo{
+	std::string name;
+	//if is set to 0 then we are working with the RAM memory and the CPU as PU
+	unsigned long availalbeMemory;
+	bool isEmulated;
+
+	ProcessingUnitInfo(std::string pName, unsigned long pAvailalbeMemory, bool pIsEmulated) {
+		name = pName;
+		availalbeMemory = pAvailalbeMemory;
+		isEmulated = pIsEmulated;
+	}
+};
 
 class AES128Base {
 
@@ -21,7 +33,7 @@ protected:
 	void KeyExpansion();
 
 public:
-	virtual std::vector<std::string> GetAvailableProcessingUnits() = 0;
+	virtual std::vector<ProcessingUnitInfo> GetAvailableProcessingUnits() = 0;
 
 	void SetKey(std::string key);
 	//The data will be overwrite by the encryption/decryption process

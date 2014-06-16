@@ -27,7 +27,7 @@ private:
 	void SequentialDecryption();
 
 public:
-	std::vector<std::string> GetAvailableProcessingUnits();
+	std::vector<ProcessingUnitInfo> GetAvailableProcessingUnits();
 
 	//Encrypt using the specified Processing Unit
 	//If the index is not valid it will throw an exception
