@@ -106,20 +106,23 @@ void AESDecryptionTestAll() {
 //This test is for a NVIDIA GTX 480 which has 1.5 GB of memory
 void AESAMPGPUMemoryTest() {
 	AES128AMP aesAMP;
-	unsigned int dataSize = UINT_MAX / 2;
-	unsigned char *data = new unsigned char[dataSize];//2GB of data
+	unsigned int dataSize = 1024 * 1024 * 1024 * 2; //2GB of data
 
-	memset(data, 0, dataSize);
-
-	aesAMP.SetKey(std::string((const char*)key));
-	aesAMP.SetData(data, dataSize);
 	try {
+		unsigned char *data = new unsigned char[dataSize];
+		memset(data, 0, dataSize);
+
+
+		aesAMP.SetKey(std::string((const char*)key));
+		aesAMP.SetData(data, dataSize);
+		aesAMP.GetAvailableProcessingUnits();
+
 		aesAMP.Encrypt(0);//this is the first GPU, or the only one if there is a GPU installed on the sistem.
 	}
-	catch (std::exception &ex) {
+	catch (std::exception &ex) {//out_of_memory: Failed to create buffer
 		std::cout << ex.what();
 		return;
 	}
-	
+
 	std::cout << "GPU Memory Test OK";
 }

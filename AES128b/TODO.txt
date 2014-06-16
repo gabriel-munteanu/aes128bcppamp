@@ -3,7 +3,8 @@ TODO:
 1. [Done] Implement encryption and decryption on GPU 
 2. [Done] Study about and implement key generation from a simple password
 	Soution: just copy the password and fill the rest of the key with NULL. If key >16 chars only the first 16 chars are used
-3. Check for memory limits
+3. [Done] Check for memory limits
+	Conclusion: I, as programmer, must take care of the maximum memory allocated on the device
 4. Use classes for implementation for a more modular code
 5. Implement performance test()
 
