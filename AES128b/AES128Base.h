@@ -6,13 +6,14 @@
 struct ProcessingUnitInfo{
 	std::string name;
 	//if is set to 0 then we are working with the RAM memory and the CPU as PU
+	// if non 0 the values is in KB
 	unsigned long availalbeMemory;
-	bool isEmulated;
+	bool isGPU;
 
-	ProcessingUnitInfo(std::string pName, unsigned long pAvailalbeMemory, bool pIsEmulated) {
+	ProcessingUnitInfo(std::string pName, unsigned long pAvailalbeMemory, bool pIsGPU) {
 		name = pName;
 		availalbeMemory = pAvailalbeMemory;
-		isEmulated = pIsEmulated;
+		isGPU = pIsGPU;
 	}
 };
 

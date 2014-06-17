@@ -2,18 +2,26 @@ TODO:
 
 1. [Done] Implement encryption and decryption on GPU 
 2. [Done] Study about and implement key generation from a simple password
-	Soution: just copy the password and fill the rest of the key with NULL. If key >16 chars only the first 16 chars are used
+	Solution: just copy the password and fill the rest of the key with NULL. If key >16 chars only the first 16 chars are used
 3. [Done] Check for memory limits
 	Conclusion: I, as programmer, must take care of the maximum memory allocated on the device
 4. [Done] Use classes for implementation for a more modular code
 5. [Done] Write a parallel implementation on CPU
-6. Study about TDR: Timeout Detection & Recovery
-7. Implement performance test with ranking and limits
-8. Memmory manangement
+6. Study about TDR: Time out Detection & Recovery. What can be done to avoid it?
+7. Implement performance tests from which will result a ranking and memory limits
+	- write performance test specific for C++ AMP(memory copy time, kernel execution time)
+8. Memory management module( CPU & GPU ) 
+	- if we have a 8GB file but only 1GB of RAM memory free?
+	- if our GPU(s) has only 512MB? 
 
 
-98. Compare against real implementation(libCrypto?)
-99. Use all available resources for one computation
+98. Use all available resources for one computation (heterogeneous computing)
+99. Compare against real implementation(libCrypto?) http://en.wikipedia.org/wiki/Crypto%2B%2B
+
+
+Optimizations?
+	- use staging arrays instead of simple arrays http://blogs.msdn.com/b/nativeconcurrency/archive/2011/11/10/staging-arrays-in-c-amp.aspx
+
 
 Ideas:
 	- run test with chunks of data size of 2^n bytes
@@ -31,5 +39,3 @@ many accelerators are found on the system. CPU implementations will have only on
 To think of:
 	- if there is no 'not emulated' accelerator it's worth trying all the tests? 
 
-Optimizations?
-	- use staging arrays instead of simple arrays http://blogs.msdn.com/b/nativeconcurrency/archive/2011/11/10/staging-arrays-in-c-amp.aspx

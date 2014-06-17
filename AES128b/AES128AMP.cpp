@@ -23,7 +23,7 @@ std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
 			_availableAccelerator.push_back(acc);
 
 	for (auto &a : _availableAccelerator)	
-		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), a.dedicated_memory, a.is_emulated));	
+		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), a.dedicated_memory, !a.is_emulated));	
 
 	return pusInfo;
 }

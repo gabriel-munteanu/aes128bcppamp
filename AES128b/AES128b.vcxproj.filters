@@ -30,6 +30,9 @@
     <ClCompile Include="AESTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\ApplicationSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt" />
@@ -47,7 +50,10 @@
     <ClInclude Include="AESTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowsHelpers.h">
+    <ClInclude Include="Helpers\WindowsHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ApplicationSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
