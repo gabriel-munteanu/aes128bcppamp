@@ -125,7 +125,32 @@ void AESAMPGPUMemoryTest() {
 		return;
 	}
 
-	std::cout << "GPU Memory Test OK";
+	std::cout << "GPU Memory Test OK\r\n\r\n";
+}
+
+//This will test if we solved the TDR issue
+void AESAMPGPUTDRTest() {
+	AES128AMP aesAMP;
+	unsigned int dataSize = 1024U * 1024U * 1024 * 1U; //1GB of data
+
+	try {
+		unsigned char *data = new unsigned char[dataSize];
+		memset(data, 0, dataSize);
+
+
+		aesAMP.SetKey(std::string((const char*)key));
+		aesAMP.SetData(data, dataSize);
+		aesAMP.GetAvailableProcessingUnits();
+
+		aesAMP.Encrypt(0);//this is the first GPU, or the only one if there is a GPU installed on the sistem.
+		delete data;
+	}
+	catch (std::exception &ex) {
+		std::cout << ex.what();
+		return;
+	}
+
+	std::cout << "GPU TDR Test OK\r\n\r\n";
 }
 
 //This will test the parallel implementation on the CPU
@@ -142,5 +167,5 @@ void AESCPUParallelTest() {
 	aesCPU.Encrypt(1);//this is the parallel implementation
 
 	delete data;
-	std::cout << "CPU Parallel implementatin Test OK";
+	std::cout << "CPU Parallel implementatin Test OK\r\n\r\n";
 }

@@ -33,8 +33,11 @@ int main()
 	//AESCPUParallelTest();
 
 	//TestApplicationSettings();
+
 	AES128AMP aesAMP;
 	AESEncryptionTest(&aesAMP);
+
+	AESAMPGPUTDRTest();
 
 	getchar();
 	return 0;
