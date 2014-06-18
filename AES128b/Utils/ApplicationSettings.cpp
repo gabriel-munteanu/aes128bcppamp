@@ -63,3 +63,9 @@ ProcessingUnitSettings ApplicationSettings::GetProcessingUnitSettings(unsigned i
 			return pu;
 	return ProcessingUnitSettings::Invalid();
 }
+
+void ApplicationSettings::ClearAllProcessingUnitsSettings() {
+	remove(APPSETTINGSFILENAME);
+	_pusSettings.clear();
+}
+

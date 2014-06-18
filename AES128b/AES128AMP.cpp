@@ -221,49 +221,65 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 
 	};
 
-
 	for (int i = 0; i < 11 * 16; i++) {
 		unsigned int x = (unsigned int)((unsigned char*)_expandedKey)[i];
 		((int*)constValues.Key)[i] = x;
 	}
 
-	array_view<unsigned int> d_data(_dataLength / 4, (unsigned int*)_data);
-	extent<1> d_ext(_dataLength / 16);//for each 4 int(16 chars = 128bits) we need a thread
+	//calculate all values we need tu run the kernel multiple times so we avoid the TDR
+	unsigned long memoryPerKernelExecution = GetMaxMemoryPerKernelExecution(puIndex);
+	unsigned long remainingDataLength = _dataLength;
+	int executions = _dataLength / memoryPerKernelExecution;
 
-	//the first parameter of the parallel_for_each specifies the accelerator that will run the code
-	parallel_for_each(_availableAccelerator[puIndex].default_view, d_ext, [=](index<1> idx) restrict(amp) {
-		int d_pos = idx[0] * 4;
-		unsigned int matr[4][4];
+	if (_dataLength % memoryPerKernelExecution != 0)
+		executions++;
 
-		for (int i = 0; i < 4; i++)
-			for (int s = 0, j = 0; s <= 24; s += 8, j++)
-				matr[i][j] = (d_data[d_pos + i] >> s) & 0xFF;
-
-
-		int r;
-		/* begin with a key addition */
-		AddRoundKey(matr, constValues.Key[10]);
-		SubBytes(matr, constValues.Si); ShiftRows(matr, 1);
-		/* RDUNDS-1 ordinary rounds */
-
-		for (r = 10 - 1; r > 0; r--) {
-			AddRoundKey(matr, constValues.Key[r]);
-			InvMixColumns(matr, constValues.Alogtable, constValues.Logtable);
-			SubBytes(matr, constValues.Si);
-			ShiftRows(matr, 1);
-		}
-		/* End with the extra key addition */
-		AddRoundKey(matr, constValues.Key[0]);
-		////
+	//allocate memory on GPU and copy data to it
+	array<unsigned int> d_data(_dataLength / 4, _availableAccelerator[puIndex].default_view);
+	copy((unsigned int*)_data, d_data);
 
 
-		//write back the matrix to its linear form
-		for (int i = 0; i < 4; i++)
-			d_data[d_pos + i] = (matr[i][0] << 0) | (matr[i][1] << 8) | (matr[i][2] << 16) | (matr[i][3] << 24);
+	for (int i = 0; i < executions; i++) {
+		unsigned long currentChunkSize = remainingDataLength < memoryPerKernelExecution ? remainingDataLength : memoryPerKernelExecution;
 
-	});
+		extent<1> d_ext(currentChunkSize / 16);//for each 4 int(16 chars = 128bits) we need a thread
 
-	d_data.synchronize();
+		//the first parameter of the parallel_for_each specifies the accelerator that will run the code
+		parallel_for_each(_availableAccelerator[puIndex].default_view, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
+			int d_pos = idx[0] * 4;
+			unsigned int matr[4][4];
+
+			for (int i = 0; i < 4; i++)
+				for (int s = 0, j = 0; s <= 24; s += 8, j++)
+					matr[i][j] = (d_data[d_pos + i] >> s) & 0xFF;
+
+
+			int r;
+			/* begin with a key addition */
+			AddRoundKey(matr, constValues.Key[10]);
+			SubBytes(matr, constValues.Si); ShiftRows(matr, 1);
+			/* RDUNDS-1 ordinary rounds */
+
+			for (r = 10 - 1; r > 0; r--) {
+				AddRoundKey(matr, constValues.Key[r]);
+				InvMixColumns(matr, constValues.Alogtable, constValues.Logtable);
+				SubBytes(matr, constValues.Si);
+				ShiftRows(matr, 1);
+			}
+			/* End with the extra key addition */
+			AddRoundKey(matr, constValues.Key[0]);
+			////
+
+
+			//write back the matrix to its linear form
+			for (int i = 0; i < 4; i++)
+				d_data[d_pos + i] = (matr[i][0] << 0) | (matr[i][1] << 8) | (matr[i][2] << 16) | (matr[i][3] << 24);
+
+		});
+		remainingDataLength -= currentChunkSize;
+	}
+	copy(d_data, (unsigned int*)_data);
+
 }
 
 void AES128AMP::Encrypt(unsigned int puIndex) {

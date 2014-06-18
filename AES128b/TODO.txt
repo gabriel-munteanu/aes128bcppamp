@@ -7,7 +7,8 @@ TODO:
 	Conclusion: I, as programmer, must take care of the maximum memory allocated on the device
 4. [Done] Use classes for implementation for a more modular code
 5. [Done] Write a parallel implementation on CPU
-6. Study about TDR: Time out Detection & Recovery. What can be done to avoid it?
+6. [Done] Study about TDR: Time out Detection & Recovery. What can be done to avoid it?
+	Solution: Load data once(if possible) and call kernel multiple times
 7. Implement performance tests from which will result a ranking and memory limits
 	- write performance test specific for C++ AMP(memory copy time, kernel execution time)
 8. Memory management module( CPU & GPU ) 

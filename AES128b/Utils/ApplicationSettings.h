@@ -73,6 +73,6 @@ public:
 			throw std::exception("Invalid index");
 	}
 	void AddProcessingUnitSettings(ProcessingUnitSettings puSettings) { _pusSettings.push_back(puSettings); FlushSettings(); }
-	void ClearAllProcessingUnitsSettings() { _pusSettings.clear(); }
+	void ClearAllProcessingUnitsSettings();
 };
 
