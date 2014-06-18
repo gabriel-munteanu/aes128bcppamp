@@ -8,6 +8,8 @@ typedef unsigned char word8;
 class AES128CPU : public AES128Base {
 
 private:
+	unsigned int ImplementationId();
+
 	static word8 Logtable[256];
 	static word8 Alogtable[256];
 	static word8 S[256];

@@ -47,7 +47,7 @@ void AESEncryptionTest(AES128Base* implementation) {
 	implementation->SetData(testBuffer, 16 * 1024);
 
 	auto pu = implementation->GetAvailableProcessingUnits();
-	for (int i = 0; i < pu.size(); i++)
+	for (unsigned int i = 0; i < pu.size(); i++)
 	{
 		initInput(inputData);
 		std::cout << i << ". " << pu[i].name << " ";
@@ -67,7 +67,7 @@ void AESDecryptionTest(AES128Base* implementation){
 	implementation->SetData(testBuffer, 16 * 1024);
 
 	auto pu = implementation->GetAvailableProcessingUnits();
-	for (int i = 0; i < pu.size(); i++)
+	for (unsigned int i = 0; i < pu.size(); i++)
 	{
 		initInput(outputData);
 		std::cout << i << ". " << pu[i].name << " ";
@@ -106,7 +106,7 @@ void AESDecryptionTestAll() {
 //This test is for a NVIDIA GTX 480 which has 1.5 GB of memory
 void AESAMPGPUMemoryTest() {
 	AES128AMP aesAMP;
-	unsigned int dataSize = 1024 * 1024 * 1024 * 2; //2GB of data
+	unsigned int dataSize = 1024U * 1024U * 1024 * 2U; //2GB of data
 
 	try {
 		unsigned char *data = new unsigned char[dataSize];

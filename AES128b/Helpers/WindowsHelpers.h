@@ -21,11 +21,11 @@ DWORD CountSetBits(ULONG_PTR bitMask) {
 	return bitSetCount;
 }
 
-int GetAvailableLogicalProcessors() {
+unsigned int GetAvailableLogicalProcessors() {
 	LPFN_GLPI glpi;
 	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
 	DWORD returnLength = 0;
-	int logicalProcessorCount = 0;
+	unsigned int logicalProcessorCount = 0;
 
 	glpi = (LPFN_GLPI)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetLogicalProcessorInformation");
 
@@ -33,7 +33,7 @@ int GetAvailableLogicalProcessors() {
 	buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)new char[returnLength];
 	rc = glpi(buffer, &returnLength);
 
-	for (int i = 0; i < returnLength / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); i++)
+	for (unsigned int i = 0; i < returnLength / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); i++)
 		if (buffer[i].Relationship == RelationProcessorCore)
 			// A hyperthreaded core supplies more than one logical processor.
 			logicalProcessorCount += CountSetBits(buffer[i].ProcessorMask);

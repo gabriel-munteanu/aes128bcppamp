@@ -23,7 +23,7 @@ void ApplicationSettings::ReadSettings() {
 	pusSettings = new ProcessingUnitSettings[pusCount];
 
 	fin.read((char*)pusSettings, pusCount*sizeof(ProcessingUnitSettings));
-	for (int i = 0; i < pusCount; i++)
+	for (unsigned int i = 0; i < pusCount; i++)
 		_pusSettings.push_back(pusSettings[i]);
 
 	delete pusSettings;
@@ -55,4 +55,11 @@ void ApplicationSettings::InitAppSettings() {
 
 	Current = new ApplicationSettings();
 	Current->ReadSettings();
+}
+
+ProcessingUnitSettings ApplicationSettings::GetProcessingUnitSettings(unsigned int implementationId, unsigned int puId) {
+	for (auto &pu : _pusSettings)
+		if (pu.ImplementationId == implementationId && pu.ProcessingUnitId == puId)
+			return pu;
+	return ProcessingUnitSettings::Invalid();
 }

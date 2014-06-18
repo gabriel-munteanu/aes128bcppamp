@@ -39,3 +39,6 @@ many accelerators are found on the system. CPU implementations will have only on
 To think of:
 	- if there is no 'not emulated' accelerator it's worth trying all the tests? 
 
+Memory Management Module will take care of this:
+- load data in RAM as much as it can
+- if we process data on a GPU then it will give to the PU no more data than it can load in memory

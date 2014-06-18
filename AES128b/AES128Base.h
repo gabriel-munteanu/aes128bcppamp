@@ -27,6 +27,8 @@ protected:
 	unsigned char *_data;
 	unsigned long _dataLength;
 
+	virtual unsigned int ImplementationId() = 0;
+
 	//processing units identifiers
 	std::vector<void*> _puIdentifiers;
 
