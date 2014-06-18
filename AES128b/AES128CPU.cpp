@@ -12,8 +12,8 @@ unsigned int AES128CPU::ImplementationId() { return 1; }
 
 std::vector<ProcessingUnitInfo> AES128CPU::GetAvailableProcessingUnits() {
 	std::vector<ProcessingUnitInfo> pusInfo;
-	pusInfo.push_back(ProcessingUnitInfo(std::string("CPU Sequential implementation"), 0, false));
-	pusInfo.push_back(ProcessingUnitInfo(std::string("CPU Parallel implementation"), 0, false));
+	pusInfo.push_back(ProcessingUnitInfo(std::string("CPU Sequential implementation"), this, 0, 0, false));
+	pusInfo.push_back(ProcessingUnitInfo(std::string("CPU Parallel implementation"), this, 1, 0, false));
 
 	return pusInfo;
 }

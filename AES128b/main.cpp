@@ -1,9 +1,10 @@
 #include <iostream>
 
-#include "AESTest.h"
+#include "Tests\AESTest.h"
 #include "AES128AMP.h"
 #include "AES128CPU.h"
 #include "Utils\ApplicationSettings.h"
+#include "Utils\Benchmark.h"
 
 void TestApplicationSettings() {
 	ApplicationSettings::InitAppSettings();
@@ -29,16 +30,8 @@ void TestApplicationSettings() {
 
 int main()
 {
-	//AESAMPGPUMemoryTest();
-	//AESCPUParallelTest();
-
-	//TestApplicationSettings();
-
-	AES128AMP aesAMP;
-	AESEncryptionTest(&aesAMP);
-
-	AESAMPGPUTDRTest();
-
+	
+	Benchmark::HardPerformanceTest();
 	getchar();
 	return 0;
 }

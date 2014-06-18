@@ -28,8 +28,9 @@ std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
 		if (acc.device_path != accelerator::cpu_accelerator && acc.device_path != accelerator::direct3d_ref)
 			_availableAccelerator.push_back(acc);
 
+	unsigned int i = 0;
 	for (auto &a : _availableAccelerator)
-		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), a.dedicated_memory, !a.is_emulated));
+		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), this, i++, a.dedicated_memory, !a.is_emulated));
 
 	return pusInfo;
 }

@@ -27,10 +27,13 @@
     <ClCompile Include="AES128AMP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AESTest.cpp">
+    <ClCompile Include="Utils\ApplicationSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\ApplicationSettings.cpp">
+    <ClCompile Include="Utils\Benchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\AESTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,13 +50,16 @@
     <ClInclude Include="AES128AMP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AESTest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Helpers\WindowsHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ApplicationSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Benchmark.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tests\AESTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

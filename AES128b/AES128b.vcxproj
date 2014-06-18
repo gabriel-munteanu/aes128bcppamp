@@ -118,7 +118,8 @@
   <ItemGroup>
     <ClCompile Include="AES128Base.cpp" />
     <ClCompile Include="AES128CPU.cpp" />
-    <ClCompile Include="AESTest.cpp" />
+    <ClCompile Include="Tests\AESTest.cpp" />
+    <ClCompile Include="Utils\Benchmark.cpp" />
     <ClCompile Include="Utils\ApplicationSettings.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="AES128AMP.cpp" />
@@ -127,7 +128,8 @@
     <ClInclude Include="AES128AMP.h" />
     <ClInclude Include="AES128Base.h" />
     <ClInclude Include="AES128CPU.h" />
-    <ClInclude Include="AESTest.h" />
+    <ClInclude Include="Tests\AESTest.h" />
+    <ClInclude Include="Utils\Benchmark.h" />
     <ClInclude Include="Utils\ApplicationSettings.h" />
     <ClInclude Include="Helpers\WindowsHelpers.h" />
   </ItemGroup>

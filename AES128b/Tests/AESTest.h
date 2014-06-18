@@ -1,7 +1,7 @@
 #pragma once
 
-#include "AES128AMP.h"
-#include "AES128CPU.h"
+#include "..\AES128AMP.h"
+#include "..\AES128CPU.h"
 
 void AESEncryptionTest(AES128Base* implementation);
 void AESDecryptionTest(AES128Base* implementation);
