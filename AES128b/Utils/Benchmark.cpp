@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iostream>
 #include "Benchmark.h"
 #include "..\AES128AMP.h"
 #include "..\AES128CPU.h"
@@ -12,6 +13,9 @@ void Benchmark::GenerateTestValues() {
 
 	_memTestValues.clear();
 
+	//we add this dummy value first because some PU, like GPU, will run very slowly the first time,
+	//so TAKE CARE, the first value from each result set is a dummy one!!!!!!!!!!
+	_memTestValues.push_back(value);
 	//this will add powers of 2 starting from 1KB until it reach 64MB
 	for (int i = 0; i < 10 + 7; i++, value *= 2)
 		if (i % 2 == 0)
@@ -82,6 +86,7 @@ void Benchmark::HardPerformanceTest() {
 	}
 
 	ExportHardBenchmarkData(pusInfo, pusTimings);
+	std::cout << "HardPerformanceTest finished. Check file HardBenchmarkResults.csv";
 }
 
 void Benchmark::ExportHardBenchmarkData(std::vector<ProcessingUnitInfo> pusInfo, std::vector<std::vector<double>> timings) {
