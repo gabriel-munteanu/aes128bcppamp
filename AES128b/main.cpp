@@ -6,7 +6,7 @@
 #include "Utils\ApplicationSettings.h"
 
 void TestApplicationSettings() {
-	ApplicationSettings::InitAppSettings();	 
+	ApplicationSettings::InitAppSettings();
 
 	ProcessingUnitSettings puSettings;
 	puSettings.ImplementationId = 1;
@@ -20,7 +20,11 @@ void TestApplicationSettings() {
 
 	ApplicationSettings::InitAppSettings();
 
-	int i = ApplicationSettings::Current->GetProcessingUnitsCount();
+	auto settings = ApplicationSettings::Current->GetProcessingUnitSettings(0);
+	if (settings == puSettings)
+		std::cout << "Application Settings Test OK";
+	else
+		std::cout << "Application Settings Test Failed";
 }
 
 int main()
@@ -28,7 +32,9 @@ int main()
 	//AESAMPGPUMemoryTest();
 	//AESCPUParallelTest();
 
-	TestApplicationSettings();
+	//TestApplicationSettings();
+	AES128AMP aesAMP;
+	AESEncryptionTest(&aesAMP);
 
 	getchar();
 	return 0;

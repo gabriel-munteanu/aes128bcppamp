@@ -160,7 +160,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 
 	//allocate memory on GPU and copy data to it
 	array<unsigned int> d_data(_dataLength / 4, _availableAccelerator[puIndex].default_view);
-	copy(_data, d_data);
+	copy((unsigned int*)_data, d_data);
 
 	for (int i = 0; i < executions; i++) {
 		unsigned long currentChunkSize = remainingDataLength < memoryPerKernelExecution ? remainingDataLength : memoryPerKernelExecution;
@@ -202,7 +202,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 		});
 		remainingDataLength -= currentChunkSize;
 	}
-	copy(d_data, _data);
+	copy(d_data, (unsigned int*)_data);
 }
 
 
