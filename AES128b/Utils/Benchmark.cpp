@@ -91,15 +91,23 @@ void Benchmark::HardPerformanceTest() {
 
 void Benchmark::ExportHardBenchmarkData(std::vector<ProcessingUnitInfo> pusInfo, std::vector<std::vector<double>> timings) {
 	std::ofstream fout;
+	time_t rawtime;
+	tm timeinfo;
+	char filename[100];
 
-	fout.open("HardBenchmarkResults.csv");
+	time(&rawtime);
+	localtime_s(&timeinfo, &rawtime);
+
+	strftime(filename, 100, "HardBenchmarkResults-%Y-%m-%d_%H-%M-%S.csv", &timeinfo);//2001-08-29_23-50-15
+
+	fout.open(filename);
 
 	for (unsigned int puIndex = 0; puIndex < pusInfo.size(); puIndex++) {
 		auto pu = pusInfo[puIndex];
 
-		fout << pu.name << ";" << pu.isGPU << ";" << pu.availableMemory / 1024 << ";\r\n";//display availabelMemory in MB
+		fout << pu.name << "," << pu.isGPU << "," << pu.availableMemory / 1024 << ",\r\n";//display availabelMemory in MB
 		for (auto time : timings[puIndex])
-			fout << time / 1000 << ";";//display elapsed time in seconds
+			fout << time / 1000 << ",";//display elapsed time in seconds
 		fout << "\r\n";
 	}
 
