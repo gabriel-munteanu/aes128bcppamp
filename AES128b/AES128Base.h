@@ -16,9 +16,7 @@ protected:
 	unsigned char _key[17];
 	unsigned char _expandedKey[11][4][4];
 	unsigned char *_data;
-	unsigned long _dataLength;
-
-	virtual unsigned int ImplementationId() = 0;
+	unsigned long _dataLength;	
 
 	//processing units identifiers
 	std::vector<void*> _puIdentifiers;
@@ -27,6 +25,7 @@ protected:
 	void KeyExpansion();
 
 public:
+	virtual unsigned int ImplementationId() = 0;
 	virtual std::vector<ProcessingUnitInfo> GetAvailableProcessingUnits() = 0;
 
 	void SetKey(std::string key);

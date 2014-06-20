@@ -28,8 +28,33 @@ void TestApplicationSettings() {
 		std::cout << "Application Settings Test Failed";
 }
 
-int main()
-{
+void GenerateSettingsFile() {
+	ApplicationSettings::InitAppSettings();
+	if (ApplicationSettings::Current->HasSettings())
+		return;
+
+	AES128Base *implementations[] = { new AES128AMP(), new AES128CPU() };
+	int implementationsCount = sizeof(implementations) / sizeof(implementations[0]);
+
+	std::vector<ProcessingUnitInfo> pusInfo;
+	for (int i = 0; i < implementationsCount; i++) {
+		auto implPus = implementations[i]->GetAvailableProcessingUnits();
+		pusInfo.insert(pusInfo.end(), implPus.begin(), implPus.end());
+	}
+
+	for (auto pu : pusInfo) {
+		ApplicationSettings::Current->AddProcessingUnitSettings(
+			ProcessingUnitSettings(
+			pu.implementation->ImplementationId(),
+			pu.processingUnitId,
+			pu.availableMemory,
+			pu.isGPU,
+			pu.isGPU ? DEFAULT_MEMORY_PER_KERNEL_RUN : 0));
+	}
+}
+
+int main() {
+	GenerateSettingsFile();
 	
 	for (int i = 0; i < 10; i++)
 		try {

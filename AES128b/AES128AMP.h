@@ -9,7 +9,6 @@ class AES128AMP : public AES128Base {
 
 private:
 	std::vector<accelerator> _availableAccelerator;
-	unsigned int ImplementationId();
 
 	static int mul(unsigned int a, unsigned int b, const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp);
 	static void AddRoundKey(unsigned int data[4][4], const unsigned int rk[4][4]) restrict(amp);
@@ -19,10 +18,12 @@ private:
 	static void InvMixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp);
 
 	unsigned long GetMaxMemoryPerKernelExecution(unsigned int puIndex);
+	void UpdateMaxMemoryPerKernelExecution(unsigned int puIndex, unsigned long memory);
 	void AMPEncrypt(unsigned int puIndex);
 	void AMPDecryption(unsigned int puIndex);
 
 public:
+	unsigned int ImplementationId();
 	std::vector<ProcessingUnitInfo> GetAvailableProcessingUnits();
 	std::vector<std::vector<double>> EncryptionKernelTimings;
 

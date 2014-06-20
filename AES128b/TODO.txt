@@ -9,19 +9,19 @@ TODO:
 5. [Done] Write a parallel implementation on CPU
 6. [Done] Study about TDR: Time out Detection & Recovery. What can be done to avoid it?
 	Solution: Load data once(if possible) and call kernel multiple times
-7. Implement performance tests from which will result a ranking and memory limits
+7. [Done] Implement performance tests from which will result a ranking and memory limits
 	- write performance test specific for C++ AMP(memory copy time, kernel execution time)
-8. Memory management module( CPU & GPU ) 
+8. Optimize AMP code
+	- dinamically calculate maxMemoryPerKernelExecution
+	- use staging arrays instead of simple arrays http://blogs.msdn.com/b/nativeconcurrency/archive/2011/11/10/staging-arrays-in-c-amp.aspx
+	- change queue mode to imediate
+
+97. Memory management module( CPU & GPU ) 
 	- if we have a 8GB file but only 1GB of RAM memory free?
 	- if our GPU(s) has only 512MB? 
-
-
 98. Use all available resources for one computation (heterogeneous computing)
 99. Compare against real implementation(libCrypto?) http://en.wikipedia.org/wiki/Crypto%2B%2B
 
-
-Optimizations?
-	- use staging arrays instead of simple arrays http://blogs.msdn.com/b/nativeconcurrency/archive/2011/11/10/staging-arrays-in-c-amp.aspx
 
 
 Ideas:

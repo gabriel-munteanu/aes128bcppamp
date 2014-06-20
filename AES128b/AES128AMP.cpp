@@ -4,8 +4,6 @@
 #include <atlconv.h>
 #include <atlbase.h>
 
-//50MB by default
-#define DEFAULT_MEMORY_PER_KERNEL_RUN 1024*1024*50
 
 struct Constants{
 	unsigned int Logtable[256];
@@ -134,10 +132,22 @@ unsigned long AES128AMP::GetMaxMemoryPerKernelExecution(unsigned int puIndex) {
 			return settings.MaxMemoryPerKernelExecution;
 }
 
+void AES128AMP::UpdateMaxMemoryPerKernelExecution(unsigned int puIndex, unsigned long memory) {
+	ApplicationSettings::InitAppSettings();// just to be sure
+	auto settings = ApplicationSettings::Current->GetProcessingUnitSettings(ImplementationId(), puIndex);
+
+	if (settings == ProcessingUnitSettings::Invalid())
+		return;
+
+	settings.MaxMemoryPerKernelExecution = memory;
+	ApplicationSettings::Current->UpdateProcessingUnitSettings(settings);
+}
+
+
 
 void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 
-	const Constants constValues =
+	Constants constValues =
 	{
 		//Logtable
 		{ 0, 0, 25, 1, 50, 2, 26, 198, 75, 199, 27, 104, 51, 238, 223, 3, 100, 4, 224, 14, 52, 141, 129, 239, 76, 113, 8, 200, 248, 105, 28, 193, 125, 194, 29, 181, 249, 185, 39, 106, 77, 228, 166, 114, 154, 201, 9, 120, 101, 47, 138, 5, 33, 15, 225, 36, 18, 240, 130, 69, 53, 147, 218, 142, 150, 143, 219, 189, 54, 208, 206, 148, 19, 92, 210, 241, 64, 70, 131, 56, 102, 221, 253, 48, 191, 6, 139, 98, 179, 37, 226, 152, 34, 136, 145, 16, 126, 110, 72, 195, 163, 182, 30, 66, 58, 107, 40, 84, 250, 133, 61, 186, 43, 121, 10, 21, 155, 159, 94, 202, 78, 212, 172, 229, 243, 115, 167, 87, 175, 88, 168, 80, 244, 234, 214, 116, 79, 174, 233, 213, 231, 230, 173, 232, 44, 215, 117, 122, 235, 22, 11, 245, 89, 203, 95, 176, 156, 169, 81, 160, 127, 12, 246, 111, 23, 196, 73, 236, 216, 67, 31, 45, 164, 118, 123, 183, 204, 187, 62, 90, 251, 96, 177, 134, 59, 82, 161, 108, 170, 85, 41, 157, 151, 178, 135, 144, 97, 190, 220, 252, 188, 149, 207, 205, 55, 63, 91, 209, 83, 57, 132, 60, 65, 162, 109, 71, 20, 42, 158, 93, 86, 242, 211, 171, 68, 17, 146, 217, 35, 32, 46, 137, 180, 124, 184, 38, 119, 153, 227, 165, 103, 74, 237, 222, 197, 49, 254, 24, 13, 99, 140, 128, 192, 247, 112, 7 },
@@ -159,26 +169,27 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 	//calculate all values we need tu run the kernel multiple times so we avoid the TDR
 	unsigned long memoryPerKernelExecution = GetMaxMemoryPerKernelExecution(puIndex);
 	unsigned long remainingDataLength = _dataLength;
-	int executions = _dataLength / memoryPerKernelExecution;
 
-	if (_dataLength % memoryPerKernelExecution != 0)
-		executions++;
 
 	accelerator_view accView = _availableAccelerator[puIndex].create_view(queuing_mode::queuing_mode_immediate);
 
 	//allocate memory on GPU and copy data to it
 	array<unsigned int> d_data(_dataLength / 4, accView);
-	copy((unsigned int*)_data, d_data);	
+	copy((unsigned int*)_data, d_data);
 	accView.wait();
 
 	LARGE_INTEGER tStart, tEnd;
 	QueryPerformanceCounter(&tStart);
 
-
-	for (int i = 0; i < executions; i++) {
+	int i = 0;
+	while (remainingDataLength > 0) {
 		unsigned long currentChunkSize = remainingDataLength < memoryPerKernelExecution ? remainingDataLength : memoryPerKernelExecution;
 
 		extent<1> d_ext(currentChunkSize / 16);//for each 4 int(16 chars = 128bits) we need a thread
+
+		//start performance test for kernel
+		LARGE_INTEGER tKStart, tKEnd;
+		QueryPerformanceCounter(&tKStart);
 
 		//the first parameter of the parallel_for_each specifies the accelerator that will run the code
 		parallel_for_each(accView, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
@@ -213,6 +224,18 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 				d_data[d_pos + i] = (matr[i][0] << 0) | (matr[i][1] << 8) | (matr[i][2] << 16) | (matr[i][3] << 24);
 
 		});
+
+		QueryPerformanceCounter(&tKEnd);
+		//calculate memoryPerKernelExecution again to see if we could run the kernel on bigger data chunks
+		if (currentChunkSize == memoryPerKernelExecution) {
+			double kernelTimeMs = Helper::ElapsedTime(tKStart.QuadPart, tKEnd.QuadPart);
+			if (kernelTimeMs < 1800) {// 90% of max time to run(not hitting TDR)
+				memoryPerKernelExecution = memoryPerKernelExecution * 1800 / kernelTimeMs;
+				memoryPerKernelExecution = ((memoryPerKernelExecution / 16) + 1) * 16;//make it divide by 16
+				UpdateMaxMemoryPerKernelExecution(puIndex, memoryPerKernelExecution);
+			}
+		}
+		i++;
 		remainingDataLength -= currentChunkSize;
 	}
 
@@ -224,7 +247,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 
 
 void AES128AMP::AMPDecryption(unsigned int puIndex) {
-	const Constants constValues =
+	Constants constValues =
 	{
 		//Logtable
 		{ 0, 0, 25, 1, 50, 2, 26, 198, 75, 199, 27, 104, 51, 238, 223, 3, 100, 4, 224, 14, 52, 141, 129, 239, 76, 113, 8, 200, 248, 105, 28, 193, 125, 194, 29, 181, 249, 185, 39, 106, 77, 228, 166, 114, 154, 201, 9, 120, 101, 47, 138, 5, 33, 15, 225, 36, 18, 240, 130, 69, 53, 147, 218, 142, 150, 143, 219, 189, 54, 208, 206, 148, 19, 92, 210, 241, 64, 70, 131, 56, 102, 221, 253, 48, 191, 6, 139, 98, 179, 37, 226, 152, 34, 136, 145, 16, 126, 110, 72, 195, 163, 182, 30, 66, 58, 107, 40, 84, 250, 133, 61, 186, 43, 121, 10, 21, 155, 159, 94, 202, 78, 212, 172, 229, 243, 115, 167, 87, 175, 88, 168, 80, 244, 234, 214, 116, 79, 174, 233, 213, 231, 230, 173, 232, 44, 215, 117, 122, 235, 22, 11, 245, 89, 203, 95, 176, 156, 169, 81, 160, 127, 12, 246, 111, 23, 196, 73, 236, 216, 67, 31, 45, 164, 118, 123, 183, 204, 187, 62, 90, 251, 96, 177, 134, 59, 82, 161, 108, 170, 85, 41, 157, 151, 178, 135, 144, 97, 190, 220, 252, 188, 149, 207, 205, 55, 63, 91, 209, 83, 57, 132, 60, 65, 162, 109, 71, 20, 42, 158, 93, 86, 242, 211, 171, 68, 17, 146, 217, 35, 32, 46, 137, 180, 124, 184, 38, 119, 153, 227, 165, 103, 74, 237, 222, 197, 49, 254, 24, 13, 99, 140, 128, 192, 247, 112, 7 },
@@ -246,10 +269,7 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 	//calculate all values we need tu run the kernel multiple times so we avoid the TDR
 	unsigned long memoryPerKernelExecution = GetMaxMemoryPerKernelExecution(puIndex);
 	unsigned long remainingDataLength = _dataLength;
-	int executions = _dataLength / memoryPerKernelExecution;
 
-	if (_dataLength % memoryPerKernelExecution != 0)
-		executions++;
 
 	accelerator_view accView = _availableAccelerator[puIndex].create_view(queuing_mode::queuing_mode_immediate);
 
@@ -257,8 +277,8 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 	array<unsigned int> d_data(_dataLength / 4, accView);
 	copy((unsigned int*)_data, d_data);
 
-
-	for (int i = 0; i < executions; i++) {
+	int i = 0;
+	while (remainingDataLength > 0) {
 		unsigned long currentChunkSize = remainingDataLength < memoryPerKernelExecution ? remainingDataLength : memoryPerKernelExecution;
 
 		extent<1> d_ext(currentChunkSize / 16);//for each 4 int(16 chars = 128bits) we need a thread
@@ -295,6 +315,7 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 				d_data[d_pos + i] = (matr[i][0] << 0) | (matr[i][1] << 8) | (matr[i][2] << 16) | (matr[i][3] << 24);
 
 		});
+		i++;
 		remainingDataLength -= currentChunkSize;
 	}
 	copy(d_data, (unsigned int*)_data);

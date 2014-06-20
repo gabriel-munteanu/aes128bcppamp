@@ -64,6 +64,17 @@ ProcessingUnitSettings ApplicationSettings::GetProcessingUnitSettings(unsigned i
 	return ProcessingUnitSettings::Invalid();
 }
 
+bool ApplicationSettings::UpdateProcessingUnitSettings(ProcessingUnitSettings puSettings) {
+	for (auto &pu : _pusSettings) {
+		if (pu.ImplementationId == puSettings.ImplementationId && pu.ProcessingUnitId == puSettings.ImplementationId) {
+			pu = puSettings;
+			FlushSettings();
+			return true;
+		}
+	}
+	return false;
+}
+
 void ApplicationSettings::ClearAllProcessingUnitsSettings() {
 	remove(APPSETTINGSFILENAME);
 	_pusSettings.clear();

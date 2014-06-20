@@ -4,6 +4,9 @@
 #include <vector>
 #include <string>
 
+//50MB by default
+#define DEFAULT_MEMORY_PER_KERNEL_RUN 1024*1024*50
+
 struct ProcessingUnitSettings {
 	unsigned int ImplementationId;
 	unsigned int ProcessingUnitId;
@@ -15,6 +18,16 @@ struct ProcessingUnitSettings {
 	//in bytes
 	//it must be a multiple of 16
 	unsigned long MaxMemoryPerKernelExecution;//this will be set only if IsGPU is true
+
+	ProcessingUnitSettings(unsigned int pImplementationId, unsigned int pProcessingUnitId, unsigned long pMaxMemoryRecommended,
+		bool pIsGPU, unsigned long pMaxMemoryPerKernelExecution) {
+		ImplementationId = pImplementationId;
+		ProcessingUnitId = pProcessingUnitId;
+		MaxMemoryRecommended = pMaxMemoryRecommended;
+		IsGPU = pIsGPU;
+		MaxMemoryPerKernelExecution = pMaxMemoryPerKernelExecution;
+	}
+	ProcessingUnitSettings() {}
 
 	bool operator ==(ProcessingUnitSettings &compWith) {
 		if (ImplementationId == compWith.ImplementationId &&
@@ -30,6 +43,9 @@ struct ProcessingUnitSettings {
 	static ProcessingUnitSettings Invalid() {
 		return ProcessingUnitSettings{ -1 };
 	}
+
+private:
+	ProcessingUnitSettings(int n) { ProcessingUnitSettings(n, n, n, false, n); }
 };
 
 
@@ -65,13 +81,7 @@ public:
 			return ProcessingUnitSettings::Invalid();
 	}
 	ProcessingUnitSettings GetProcessingUnitSettings(unsigned int implementationId, unsigned int puId);
-	void UpdateProcessingUnitSettings(unsigned int index, ProcessingUnitSettings puSettings) {
-		if (index < _pusSettings.size()) {
-			_pusSettings[index] = puSettings; FlushSettings();
-		}
-		else
-			throw std::exception("Invalid index");
-	}
+	bool UpdateProcessingUnitSettings(ProcessingUnitSettings puSettings);
 	void AddProcessingUnitSettings(ProcessingUnitSettings puSettings) { _pusSettings.push_back(puSettings); FlushSettings(); }
 	void ClearAllProcessingUnitsSettings();
 };
