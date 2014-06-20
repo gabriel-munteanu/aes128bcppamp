@@ -21,7 +21,9 @@ void Benchmark::GenerateTestValues() {
 		if (i % 2 == 0)
 			_memTestValues.push_back(value);
 	//TODO: remove the return, just for testing purpose
-	return;
+	//return;
+	//_memTestValues.clear();
+	//value = _128mb * 4;
 	// add from 128MB to 1GB with 128MB step
 	for (int i = 0; i < 8; i++, value += _128mb)
 		_memTestValues.push_back(value);
@@ -62,12 +64,14 @@ void Benchmark::HardPerformanceTest() {
 	//for each test run all PUs, this way we don't stress to much one PU at once
 	for (unsigned int testIndex = 0; testIndex < _memTestValues.size(); testIndex++) {
 		unsigned char *data = new unsigned char[_memTestValues[testIndex]];
-		memset(data, 0, _memTestValues[testIndex]);
+		std::cout << "# " << _memTestValues[testIndex] / 1024 / 1024 << "MB\n";
 
 		for (unsigned int puIndex = 0; puIndex < pusInfo.size(); puIndex++) {
 			LARGE_INTEGER tStart, tEnd;
+			memset(data, 0, _memTestValues[testIndex]);
 			pusInfo[puIndex].implementation->SetKey(std::string((const char*)key));
 			pusInfo[puIndex].implementation->SetData(data, _memTestValues[testIndex]);
+			std::cout << pusInfo[puIndex].name << "\n";
 
 			//TODO: Create Windows Helpers method using below method of getting the current 'time'. We should make thing portable 
 			QueryPerformanceCounter(&tStart);
@@ -78,15 +82,18 @@ void Benchmark::HardPerformanceTest() {
 
 			//when we are testing with 128MB or higher we take a break because, for PU like CPU, the temperature 
 			//can increase dramatically
-			if (_memTestValues[testIndex] >= (1024U << 17))
-				Sleep(10 * 1000);
+			//if (_memTestValues[testIndex] >= (1024U << 17))
+			//	Sleep(3 * 1000);
 		}
 
-		delete data;
+		delete[] data;
 	}
 
+	for (int i = 0; i < implementationsCount; i++)
+		delete implementations[i];
+
 	ExportHardBenchmarkData(pusInfo, pusTimings);
-	std::cout << "HardPerformanceTest finished. Check file HardBenchmarkResults.csv";
+	std::cout << "HardPerformanceTest finished.\r\n";
 }
 
 void Benchmark::ExportHardBenchmarkData(std::vector<ProcessingUnitInfo> pusInfo, std::vector<std::vector<double>> timings) {
@@ -102,13 +109,23 @@ void Benchmark::ExportHardBenchmarkData(std::vector<ProcessingUnitInfo> pusInfo,
 
 	fout.open(filename);
 
+	//the first line will contain the memory values used for tests
+	fout << ",,,";//this is an 'empty PU description'
+	for (auto memValue : _memTestValues) {
+		if (memValue < 2 << 19)//if memValue unde 1MB then write KB, else MB
+			fout << memValue / 1024 << "KB, ";
+		else
+			fout << memValue / 1024 / 1024 << "MB, ";
+	}
+	fout << "\n";
+
 	for (unsigned int puIndex = 0; puIndex < pusInfo.size(); puIndex++) {
 		auto pu = pusInfo[puIndex];
 
-		fout << pu.name << "," << pu.isGPU << "," << pu.availableMemory / 1024 << ",\r\n";//display availabelMemory in MB
+		fout << pu.name << "," << pu.isGPU << "," << pu.availableMemory / 1024 << ",";//display availabelMemory in MB
 		for (auto time : timings[puIndex])
 			fout << time / 1000 << ",";//display elapsed time in seconds
-		fout << "\r\n";
+		fout << "\n";
 	}
 
 	fout.close();

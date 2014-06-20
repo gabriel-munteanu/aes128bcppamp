@@ -118,7 +118,7 @@ void AESAMPGPUMemoryTest() {
 		aesAMP.GetAvailableProcessingUnits();
 
 		aesAMP.Encrypt(0);//this is the first GPU, or the only one if there is a GPU installed on the sistem.
-		delete data;
+		delete[] data;
 	}
 	catch (std::exception &ex) {//out_of_memory: Failed to create buffer
 		std::cout << ex.what();
@@ -143,7 +143,7 @@ void AESAMPGPUTDRTest() {
 		aesAMP.GetAvailableProcessingUnits();
 
 		aesAMP.Encrypt(0);//this is the first GPU, or the only one if there is a GPU installed on the sistem.
-		delete data;
+		delete[] data;
 	}
 	catch (std::exception &ex) {
 		std::cout << ex.what();
@@ -166,6 +166,31 @@ void AESCPUParallelTest() {
 	aesCPU.SetData(data, dataSize);
 	aesCPU.Encrypt(1);//this is the parallel implementation
 
-	delete data;
+	delete[] data;
 	std::cout << "CPU Parallel implementatin Test OK\r\n\r\n";
+}
+
+//This test is for the Software Emulated Driver
+void AESAMPWARPMemoryTest() {
+	AES128AMP aesAMP;
+	unsigned int dataSize = 1024U * 1024U * 1024 * 1U; //1GB of data
+
+	try {
+		unsigned char *data = new unsigned char[dataSize];
+		memset(data, 0, dataSize);
+
+
+		aesAMP.SetKey(std::string((const char*)key));
+		aesAMP.SetData(data, dataSize);
+		aesAMP.GetAvailableProcessingUnits();
+
+		aesAMP.Encrypt(2);//because on this sistem we have 2 GPU, WARP is the third
+		delete[] data;
+	}
+	catch (std::exception &ex) {
+		std::cout << ex.what();
+		return;
+	}
+
+	std::cout << "WARP Memory Test OK\r\n\r\n";
 }

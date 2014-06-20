@@ -12,3 +12,4 @@ void AESDecryptionTestAll();
 void AESAMPGPUMemoryTest();
 void AESAMPGPUTDRTest();
 void AESCPUParallelTest();
+void AESAMPWARPMemoryTest();

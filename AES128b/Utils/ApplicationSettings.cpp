@@ -26,7 +26,7 @@ void ApplicationSettings::ReadSettings() {
 	for (unsigned int i = 0; i < pusCount; i++)
 		_pusSettings.push_back(pusSettings[i]);
 
-	delete pusSettings;
+	delete[] pusSettings;
 	fin.close();
 	_hasSettings = true;
 }

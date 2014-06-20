@@ -31,7 +31,15 @@ void TestApplicationSettings() {
 int main()
 {
 	
-	Benchmark::HardPerformanceTest();
+	for (int i = 0; i < 10; i++)
+		try {
+
+		Benchmark::HardPerformanceTest();
+	}
+	catch (std::exception &ex) {
+		std::cout << ex.what() << "\n";
+	}
+
 	getchar();
 	return 0;
 }

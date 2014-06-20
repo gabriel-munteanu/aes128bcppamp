@@ -28,6 +28,9 @@ std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
 		if (acc.device_path != accelerator::cpu_accelerator && acc.device_path != accelerator::direct3d_ref)
 			_availableAccelerator.push_back(acc);
 
+	//remove WARP because is causing problems in HardBenchmarkTests
+	_availableAccelerator.pop_back();
+
 	unsigned int i = 0;
 	for (auto &a : _availableAccelerator)
 		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), this, i++, a.dedicated_memory, !a.is_emulated));
@@ -159,9 +162,12 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 	if (_dataLength % memoryPerKernelExecution != 0)
 		executions++;
 
+	accelerator_view accView = _availableAccelerator[puIndex].create_view(queuing_mode::queuing_mode_immediate);
+
 	//allocate memory on GPU and copy data to it
-	array<unsigned int> d_data(_dataLength / 4, _availableAccelerator[puIndex].default_view);
+	array<unsigned int> d_data(_dataLength / 4, accView);
 	copy((unsigned int*)_data, d_data);
+	
 
 	for (int i = 0; i < executions; i++) {
 		unsigned long currentChunkSize = remainingDataLength < memoryPerKernelExecution ? remainingDataLength : memoryPerKernelExecution;
@@ -169,7 +175,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 		extent<1> d_ext(currentChunkSize / 16);//for each 4 int(16 chars = 128bits) we need a thread
 
 		//the first parameter of the parallel_for_each specifies the accelerator that will run the code
-		parallel_for_each(_availableAccelerator[puIndex].default_view, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
+		parallel_for_each(accView, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
 			//we need to jump over already processed data
 			// if in on kernel we process X bytes of data, the kernel actualy see X/4 elements because in one int we have 4 chars
 			int d_pos = (i * memoryPerKernelExecution / 4) + idx[0] * 4;
@@ -235,8 +241,10 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 	if (_dataLength % memoryPerKernelExecution != 0)
 		executions++;
 
+	accelerator_view accView = _availableAccelerator[puIndex].create_view(queuing_mode::queuing_mode_immediate);
+
 	//allocate memory on GPU and copy data to it
-	array<unsigned int> d_data(_dataLength / 4, _availableAccelerator[puIndex].default_view);
+	array<unsigned int> d_data(_dataLength / 4, accView);
 	copy((unsigned int*)_data, d_data);
 
 
@@ -246,8 +254,8 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 		extent<1> d_ext(currentChunkSize / 16);//for each 4 int(16 chars = 128bits) we need a thread
 
 		//the first parameter of the parallel_for_each specifies the accelerator that will run the code
-		parallel_for_each(_availableAccelerator[puIndex].default_view, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
-			int d_pos = idx[0] * 4;
+		parallel_for_each(accView, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
+			int d_pos = (i * memoryPerKernelExecution / 4) + idx[0] * 4;
 			unsigned int matr[4][4];
 
 			for (int i = 0; i < 4; i++)

@@ -38,6 +38,6 @@ unsigned int GetAvailableLogicalProcessors() {
 			// A hyperthreaded core supplies more than one logical processor.
 			logicalProcessorCount += CountSetBits(buffer[i].ProcessorMask);
 
-	delete buffer;
+	delete[] buffer;
 	return logicalProcessorCount;
 }
