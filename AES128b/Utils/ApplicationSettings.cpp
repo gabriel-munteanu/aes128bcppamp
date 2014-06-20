@@ -66,7 +66,7 @@ ProcessingUnitSettings ApplicationSettings::GetProcessingUnitSettings(unsigned i
 
 bool ApplicationSettings::UpdateProcessingUnitSettings(ProcessingUnitSettings puSettings) {
 	for (auto &pu : _pusSettings) {
-		if (pu.ImplementationId == puSettings.ImplementationId && pu.ProcessingUnitId == puSettings.ImplementationId) {
+		if (pu.ImplementationId == puSettings.ImplementationId && pu.ProcessingUnitId == puSettings.ProcessingUnitId) {
 			pu = puSettings;
 			FlushSettings();
 			return true;

@@ -82,7 +82,7 @@ public:
 	}
 	ProcessingUnitSettings GetProcessingUnitSettings(unsigned int implementationId, unsigned int puId);
 	bool UpdateProcessingUnitSettings(ProcessingUnitSettings puSettings);
-	void AddProcessingUnitSettings(ProcessingUnitSettings puSettings) { _pusSettings.push_back(puSettings); FlushSettings(); }
+	void AddProcessingUnitSettings(ProcessingUnitSettings puSettings) { _pusSettings.push_back(puSettings); _hasSettings = true; FlushSettings(); }
 	void ClearAllProcessingUnitsSettings();
 };
 

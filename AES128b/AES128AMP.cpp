@@ -230,7 +230,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 		if (currentChunkSize == memoryPerKernelExecution) {
 			double kernelTimeMs = Helper::ElapsedTime(tKStart.QuadPart, tKEnd.QuadPart);
 			if (kernelTimeMs < 1800) {// 90% of max time to run(not hitting TDR)
-				memoryPerKernelExecution = memoryPerKernelExecution * 1800 / kernelTimeMs;
+				memoryPerKernelExecution = (memoryPerKernelExecution / kernelTimeMs) * 1800;
 				memoryPerKernelExecution = ((memoryPerKernelExecution / 16) + 1) * 16;//make it divide by 16
 				UpdateMaxMemoryPerKernelExecution(puIndex, memoryPerKernelExecution);
 			}
