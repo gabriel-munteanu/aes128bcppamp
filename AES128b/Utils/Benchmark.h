@@ -6,7 +6,6 @@ class Benchmark {
 
 private:
 	static std::vector<unsigned long> _memTestValues;
-	static double ElapsedTime(const __int64&, const __int64&);
 	static void ExportHardBenchmarkData(std::vector<ProcessingUnitInfo>, std::vector<std::vector<double>>);
 
 public:

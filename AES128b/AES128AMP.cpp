@@ -32,8 +32,10 @@ std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
 	_availableAccelerator.pop_back();
 
 	unsigned int i = 0;
-	for (auto &a : _availableAccelerator)
+	for (auto &a : _availableAccelerator) {
 		pusInfo.push_back(ProcessingUnitInfo(std::string(CW2A(a.description.c_str())), this, i++, a.dedicated_memory, !a.is_emulated));
+		EncryptionKernelTimings.push_back(std::vector<double>());
+	}
 
 	return pusInfo;
 }
@@ -166,8 +168,12 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 
 	//allocate memory on GPU and copy data to it
 	array<unsigned int> d_data(_dataLength / 4, accView);
-	copy((unsigned int*)_data, d_data);
-	
+	copy((unsigned int*)_data, d_data);	
+	accView.wait();
+
+	LARGE_INTEGER tStart, tEnd;
+	QueryPerformanceCounter(&tStart);
+
 
 	for (int i = 0; i < executions; i++) {
 		unsigned long currentChunkSize = remainingDataLength < memoryPerKernelExecution ? remainingDataLength : memoryPerKernelExecution;
@@ -209,6 +215,10 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 		});
 		remainingDataLength -= currentChunkSize;
 	}
+
+	accView.wait();
+	QueryPerformanceCounter(&tEnd);
+	EncryptionKernelTimings[puIndex].push_back(Helper::ElapsedTime(tStart.QuadPart, tEnd.QuadPart));
 	copy(d_data, (unsigned int*)_data);
 }
 

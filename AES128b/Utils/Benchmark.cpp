@@ -4,6 +4,7 @@
 #include "..\AES128AMP.h"
 #include "..\AES128CPU.h"
 #include "..\Tests\AESTest.h"
+#include "..\Helpers\WindowsHelpers.h"
 
 std::vector<unsigned long> Benchmark::_memTestValues;
 
@@ -21,21 +22,11 @@ void Benchmark::GenerateTestValues() {
 		if (i % 2 == 0)
 			_memTestValues.push_back(value);
 	//TODO: remove the return, just for testing purpose
-	//return;
-	//_memTestValues.clear();
-	//value = _128mb * 4;
+	//return;	
 	// add from 128MB to 1GB with 128MB step
 	for (int i = 0; i < 8; i++, value += _128mb)
 		_memTestValues.push_back(value);
 
-}
-
-//this will return time difference in miliseconds
-//TODO: move this method to Windows Helpers
-double Benchmark::ElapsedTime(const __int64 &start, const __int64 &end) {
-	LARGE_INTEGER freq;
-	QueryPerformanceFrequency(&freq);
-	return (double(end) - double(start)) * 1000.0 / double(freq.QuadPart);
 }
 
 
@@ -73,12 +64,12 @@ void Benchmark::HardPerformanceTest() {
 			pusInfo[puIndex].implementation->SetData(data, _memTestValues[testIndex]);
 			std::cout << pusInfo[puIndex].name << "\n";
 
-			//TODO: Create Windows Helpers method using below method of getting the current 'time'. We should make thing portable 
+			//TODO: Create Windows Helpers method using below method of getting the current 'time'. We should make this thing portable 
 			QueryPerformanceCounter(&tStart);
 			pusInfo[puIndex].implementation->Encrypt(pusInfo[puIndex].processingUnitId);
 			QueryPerformanceCounter(&tEnd);
 
-			pusTimings[puIndex].push_back(ElapsedTime(tStart.QuadPart, tEnd.QuadPart));
+			pusTimings[puIndex].push_back(Helper::ElapsedTime(tStart.QuadPart, tEnd.QuadPart));
 
 			//when we are testing with 128MB or higher we take a break because, for PU like CPU, the temperature 
 			//can increase dramatically
@@ -126,6 +117,13 @@ void Benchmark::ExportHardBenchmarkData(std::vector<ProcessingUnitInfo> pusInfo,
 		for (auto time : timings[puIndex])
 			fout << time / 1000 << ",";//display elapsed time in seconds
 		fout << "\n";
+
+		if (pu.isGPU) {
+			fout << "Kernel Execution Time,,,";
+			for (auto time : ((AES128AMP*)pu.implementation)->EncryptionKernelTimings[pu.processingUnitId])
+				fout << time / 1000 << ",";//display elapsed time in seconds
+			fout << "\n";
+		}
 	}
 
 	fout.close();

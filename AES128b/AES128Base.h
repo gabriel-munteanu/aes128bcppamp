@@ -3,6 +3,9 @@
 #include <vector>
 #include <string>
 
+#include "Helpers\WindowsHelpers.h"
+
+
 struct ProcessingUnitInfo;
 
 class AES128Base {

@@ -24,6 +24,7 @@ private:
 
 public:
 	std::vector<ProcessingUnitInfo> GetAvailableProcessingUnits();
+	std::vector<std::vector<double>> EncryptionKernelTimings;
 
 	//Encrypt using the specified Processing Unit
 	//If the index is not valid it will throw an exception

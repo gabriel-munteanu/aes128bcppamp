@@ -1,13 +1,17 @@
+#pragma once
 #include <windows.h>
 //Example from http://msdn.microsoft.com/en-us/library/windows/desktop/ms683194(v=vs.85).aspx
 
+
+class Helper {
+private:
 
 typedef BOOL(WINAPI *LPFN_GLPI)(
 	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION,
 	PDWORD);
 
 // Helper function to count set bits in the processor mask.
-DWORD CountSetBits(ULONG_PTR bitMask) {
+static DWORD CountSetBits(ULONG_PTR bitMask) {
 	DWORD LSHIFT = sizeof(ULONG_PTR) * 8 - 1;
 	DWORD bitSetCount = 0;
 	ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;
@@ -21,7 +25,9 @@ DWORD CountSetBits(ULONG_PTR bitMask) {
 	return bitSetCount;
 }
 
-unsigned int GetAvailableLogicalProcessors() {
+public:
+
+static unsigned int GetAvailableLogicalProcessors() {
 	LPFN_GLPI glpi;
 	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
 	DWORD returnLength = 0;
@@ -41,3 +47,12 @@ unsigned int GetAvailableLogicalProcessors() {
 	delete[] buffer;
 	return logicalProcessorCount;
 }
+
+//this will return time difference in miliseconds
+static double ElapsedTime(const __int64 &start, const __int64 &end) {
+	LARGE_INTEGER freq;
+	QueryPerformanceFrequency(&freq);
+	return (double(end) - double(start)) * 1000.0 / double(freq.QuadPart);
+}
+
+};
