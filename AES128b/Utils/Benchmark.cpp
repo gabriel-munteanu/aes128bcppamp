@@ -19,7 +19,7 @@ void Benchmark::GenerateTestValues() {
 	_memTestValues.push_back(value);
 	//this will add powers of 2 starting from 1KB until it reach 64MB
 	for (int i = 0; i < 10 + 7; i++, value *= 2)
-		if (i % 2 == 0)
+		//if (i % 2 == 0)
 			_memTestValues.push_back(value);
 	//TODO: remove the return, just for testing purpose
 	//return;	
@@ -33,7 +33,7 @@ void Benchmark::GenerateTestValues() {
 void Benchmark::HardPerformanceTest() {
 	GenerateTestValues();
 
-	AES128Base *implementations[] = { new AES128AMP(), new AES128CPU() };
+	AES128Base *implementations[] = { new AES128AMP() };
 	int implementationsCount = sizeof(implementations) / sizeof(implementations[0]);
 
 	std::vector<ProcessingUnitInfo> pusInfo;
@@ -55,7 +55,7 @@ void Benchmark::HardPerformanceTest() {
 	//for each test run all PUs, this way we don't stress to much one PU at once
 	for (unsigned int testIndex = 0; testIndex < _memTestValues.size(); testIndex++) {
 		unsigned char *data = new unsigned char[_memTestValues[testIndex]];
-		std::cout << "# " << _memTestValues[testIndex] / 1024 / 1024 << "MB\n";
+		std::cout << "# " << _memTestValues[testIndex] / 1024 / 1024.0 << "MB\n";
 
 		for (unsigned int puIndex = 0; puIndex < pusInfo.size(); puIndex++) {
 			LARGE_INTEGER tStart, tEnd;

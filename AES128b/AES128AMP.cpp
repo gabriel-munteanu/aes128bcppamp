@@ -230,7 +230,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 		if (currentChunkSize == memoryPerKernelExecution) {
 			double kernelTimeMs = Helper::ElapsedTime(tKStart.QuadPart, tKEnd.QuadPart);
 			if (kernelTimeMs < 1800) {// 90% of max time to run(not hitting TDR)
-				memoryPerKernelExecution = memoryPerKernelExecution * 1800 / kernelTimeMs;
+				memoryPerKernelExecution = (memoryPerKernelExecution / kernelTimeMs) * 1800;
 				memoryPerKernelExecution = ((memoryPerKernelExecution / 16) + 1) * 16;//make it divide by 16
 				UpdateMaxMemoryPerKernelExecution(puIndex, memoryPerKernelExecution);
 			}
@@ -283,6 +283,10 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 
 		extent<1> d_ext(currentChunkSize / 16);//for each 4 int(16 chars = 128bits) we need a thread
 
+		//start performance test for kernel
+		LARGE_INTEGER tKStart, tKEnd;
+		QueryPerformanceCounter(&tKStart);
+
 		//the first parameter of the parallel_for_each specifies the accelerator that will run the code
 		parallel_for_each(accView, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
 			int d_pos = (i * memoryPerKernelExecution / 4) + idx[0] * 4;
@@ -315,6 +319,17 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 				d_data[d_pos + i] = (matr[i][0] << 0) | (matr[i][1] << 8) | (matr[i][2] << 16) | (matr[i][3] << 24);
 
 		});
+
+		QueryPerformanceCounter(&tKEnd);
+		//calculate memoryPerKernelExecution again to see if we could run the kernel on bigger data chunks
+		if (currentChunkSize == memoryPerKernelExecution) {
+			double kernelTimeMs = Helper::ElapsedTime(tKStart.QuadPart, tKEnd.QuadPart);
+			if (kernelTimeMs < 1800) {// 90% of max time to run(not hitting TDR)
+				memoryPerKernelExecution = (memoryPerKernelExecution / kernelTimeMs) * 1800;
+				memoryPerKernelExecution = ((memoryPerKernelExecution / 16) + 1) * 16;//make it divide by 16
+				UpdateMaxMemoryPerKernelExecution(puIndex, memoryPerKernelExecution);
+			}
+		}
 		i++;
 		remainingDataLength -= currentChunkSize;
 	}
