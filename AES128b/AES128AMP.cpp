@@ -46,12 +46,12 @@ int AES128AMP::mul(unsigned int a, unsigned int b, const unsigned int alogtable[
 	else return 0;
 }
 
-void AES128AMP::AddRoundKey(unsigned int data[4][4], const unsigned int rk[4][4]) restrict(amp) {
+void AES128AMP::AddRoundKey(unsigned int data[4][4], const unsigned int roundKey[4][4]) restrict(amp) {
 	/* XOR corresponding text input and round key input bytes */
 	int i, j;
 	for (i = 0; i < 4; i++)
 		for (j = 0; j < 4; j++)
-			data[i][j] ^= rk[i][j];
+			data[i][j] ^= roundKey[i][j];
 }
 
 void AES128AMP::SubBytes(unsigned int data[4][4], const unsigned int box[256]) restrict(amp) {
@@ -62,47 +62,47 @@ void AES128AMP::SubBytes(unsigned int data[4][4], const unsigned int box[256]) r
 			data[i][j] = box[data[i][j]];
 }
 
-void AES128AMP::ShiftRows(unsigned int a[4][4], int d) restrict(amp) {
+void AES128AMP::ShiftRows(unsigned int data[4][4], int direction) restrict(amp) {
 	/* Row 0 remains unchanged
 	* The other three rows are shifted at left by i*/
 	int tmp[4];
 	int i, j;
-	if (d == 0) {//at encrypting
+	if (direction == 0) {//at encrypting
 
 		for (i = 1; i < 4; i++) {
 			for (j = 0; j < 4; j++)
-				tmp[j] = a[i][(i + j) % 4];
+				tmp[j] = data[i][(i + j) % 4];
 			for (j = 0; j < 4; j++)
-				a[i][j] = tmp[j];
+				data[i][j] = tmp[j];
 		}
 	}
 	else {//at decrypting
 
 		for (i = 1; i < 4; i++) {
 			for (j = 0; j < 4; j++)
-				tmp[j] = a[i][(4 + j - i) % 4];
+				tmp[j] = data[i][(4 + j - i) % 4];
 			for (j = 0; j < 4; j++)
-				a[i][j] = tmp[j];
+				data[i][j] = tmp[j];
 		}
 	}
 }
 
-void AES128AMP::MixColumns(unsigned int a[4][4], const unsigned int alogtable[256], const unsigned int logtable[256]) restrict(amp) {
+void AES128AMP::MixColumns(unsigned int data[4][4], const unsigned int alogtable[256], const unsigned int logtable[256]) restrict(amp) {
 	/* Mix the four bytes of every column in a linear way */
 	int b[4][4]; int i, j;
 	for (i = 0; i < 4; i++)
 		for (j = 0; j < 4; j++)
-			b[i][j] = mul(2, a[i][j], alogtable, logtable) ^
-			mul(3, a[(i + 1) % 4][j], alogtable, logtable) ^
-			a[(i + 2) % 4][j] ^
-			a[(i + 3) % 4][j];
+			b[i][j] = mul(2, data[i][j], alogtable, logtable) ^
+			mul(3, data[(i + 1) % 4][j], alogtable, logtable) ^
+			data[(i + 2) % 4][j] ^
+			data[(i + 3) % 4][j];
 
 	for (i = 0; i < 4; i++)
 		for (j = 0; j < 4; j++)
-			a[i][j] = b[i][j];
+			data[i][j] = b[i][j];
 }
 
-void AES128AMP::InvMixColumns(unsigned int a[4][4], const unsigned int alogtable[256], const unsigned int logtable[256]) restrict(amp) {
+void AES128AMP::InvMixColumns(unsigned int data[4][4], const unsigned int alogtable[256], const unsigned int logtable[256]) restrict(amp) {
 	/* Mix the four bytes of every column in a linear way
 	* This is the opposite operation of Mixcolumns */
 	int b[4][4];
@@ -110,13 +110,13 @@ void AES128AMP::InvMixColumns(unsigned int a[4][4], const unsigned int alogtable
 
 	for (j = 0; j < 4; j++)
 		for (i = 0; i < 4; i++)
-			b[i][j] = mul(0xe, a[i][j], alogtable, logtable) ^
-			mul(0xb, a[(i + 1) % 4][j], alogtable, logtable) ^
-			mul(0xd, a[(i + 2) % 4][j], alogtable, logtable) ^
-			mul(0x9, a[(i + 3) % 4][j], alogtable, logtable);
+			b[i][j] = mul(0xe, data[i][j], alogtable, logtable) ^
+			mul(0xb, data[(i + 1) % 4][j], alogtable, logtable) ^
+			mul(0xd, data[(i + 2) % 4][j], alogtable, logtable) ^
+			mul(0x9, data[(i + 3) % 4][j], alogtable, logtable);
 	for (i = 0; i < 4; i++)
 		for (j = 0; j < 4; j++)
-			a[i][j] = b[i][j];
+			data[i][j] = b[i][j];
 }
 
 unsigned long AES128AMP::GetMaxMemoryPerKernelExecution(unsigned int puIndex) {
