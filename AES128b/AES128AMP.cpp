@@ -39,7 +39,7 @@ std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
 }
 
 
-int AES128AMP::mul(unsigned int a, unsigned int b, const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp) {
+int AES128AMP::mul(unsigned int a, unsigned int b, const unsigned int alogtable[256], const unsigned int logtable[256]) restrict(amp) {
 	/* multiply two elements of GF(256)  required for MixColumns and InvMixColumns */
 
 	if (a && b) return alogtable[(logtable[a] + logtable[b]) % 255];
@@ -87,7 +87,7 @@ void AES128AMP::ShiftRows(unsigned int a[4][4], int d) restrict(amp) {
 	}
 }
 
-void AES128AMP::MixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp) {
+void AES128AMP::MixColumns(unsigned int a[4][4], const unsigned int alogtable[256], const unsigned int logtable[256]) restrict(amp) {
 	/* Mix the four bytes of every column in a linear way */
 	int b[4][4]; int i, j;
 	for (i = 0; i < 4; i++)
@@ -102,7 +102,7 @@ void AES128AMP::MixColumns(unsigned int a[4][4], const unsigned int alogtable[24
 			a[i][j] = b[i][j];
 }
 
-void AES128AMP::InvMixColumns(unsigned int a[4][4], const unsigned int alogtable[246], const unsigned int logtable[256]) restrict(amp) {
+void AES128AMP::InvMixColumns(unsigned int a[4][4], const unsigned int alogtable[256], const unsigned int logtable[256]) restrict(amp) {
 	/* Mix the four bytes of every column in a linear way
 	* This is the opposite operation of Mixcolumns */
 	int b[4][4];

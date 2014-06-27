@@ -184,7 +184,7 @@ void AESAMPWARPMemoryTest() {
 		aesAMP.SetData(data, dataSize);
 		aesAMP.GetAvailableProcessingUnits();
 
-		aesAMP.Encrypt(2);//because on this sistem we have 2 GPU, WARP is the third
+		aesAMP.Encrypt(2);//because on this system we have 2 GPU, WARP is the third
 		delete[] data;
 	}
 	catch (std::exception &ex) {

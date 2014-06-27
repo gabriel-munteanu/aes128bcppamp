@@ -11,10 +11,10 @@ TODO:
 	Solution: Load data once(if possible) and call kernel multiple times
 7. [Done] Implement performance tests from which will result a ranking and memory limits
 	- write performance test specific for C++ AMP(memory copy time, kernel execution time)
-8. Optimize AMP code
-	- dinamically calculate maxMemoryPerKernelExecution
+8. [Done] Optimize AMP code
+	- [Done] dynamically calculate maxMemoryPerKernelExecution
 	- use staging arrays instead of simple arrays http://blogs.msdn.com/b/nativeconcurrency/archive/2011/11/10/staging-arrays-in-c-amp.aspx
-	- change queue mode to imediate
+	- [Done] change queue mode to immediate
 
 97. Memory management module( CPU & GPU ) 
 	- if we have a 8GB file but only 1GB of RAM memory free?
@@ -27,7 +27,7 @@ TODO:
 Ideas:
 	- run test with chunks of data size of 2^n bytes
 	- for data <= 2mb it's not worth to run on GPU but maybe on CPU with AMP?
-	- for some scenarios we can use some hardcoded decisions even if the hardware is different(ideea above)
+	- for some scenarios we can use some hard coded decisions even if the hardware is different(idea above)
 
 Class:
 	- there will be a base class
