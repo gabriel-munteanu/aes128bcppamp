@@ -1,6 +1,7 @@
 #include "AES128AMP.h"
 #include "Utils\ApplicationSettings.h"
 
+#include <iostream>
 #include <atlconv.h>
 #include <atlbase.h>
 
@@ -279,7 +280,7 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 
 	int i = 0;
 	while (remainingDataLength > 0) {
-		unsigned long currentChunkSize = remainingDataLength < memoryPerKernelExecution ? remainingDataLength : memoryPerKernelExecution;
+		unsigned long currentChunkSize = min(remainingDataLength, memoryPerKernelExecution);
 
 		extent<1> d_ext(currentChunkSize / 16);//for each 4 int(16 chars = 128bits) we need a thread
 
