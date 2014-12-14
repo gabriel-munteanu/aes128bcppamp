@@ -23,7 +23,7 @@ std::vector<ProcessingUnitInfo> AES128AMP::GetAvailableProcessingUnits() {
 	auto accs = accelerator::get_all();
 	for (auto &acc : accs)
 		//exclude CPU accelerator because it cannot be use for computation
-		//excluse Software Emulated Accelerator because it is very very slow and it's purpose is for debugging only
+		//exclude Software Emulated Accelerator because it is very very slow and it's purpose is for debugging only
 		if (acc.device_path != accelerator::cpu_accelerator && acc.device_path != accelerator::direct3d_ref)
 			_availableAccelerator.push_back(acc);
 
@@ -144,7 +144,13 @@ void AES128AMP::UpdateMaxMemoryPerKernelExecution(unsigned int puIndex, unsigned
 	ApplicationSettings::Current->UpdateProcessingUnitSettings(settings);
 }
 
-
+void AES128AMP::CopyExpandedKeyToConstValues(Constants &constValues)
+{
+	for (int i = 0; i < 11 * 16; i++) {
+		unsigned int x = (unsigned int)((unsigned char*)_expandedKey)[i];
+		((int*)constValues.Key)[i] = x;
+	}
+}
 
 void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 
@@ -162,12 +168,9 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 
 	};
 
-	for (int i = 0; i < 11 * 16; i++) {
-		unsigned int x = (unsigned int)((unsigned char*)_expandedKey)[i];
-		((int*)constValues.Key)[i] = x;
-	}
+	CopyExpandedKeyToConstValues(constValues);
 
-	//calculate all values we need tu run the kernel multiple times so we avoid the TDR
+	//calculate all values we need to run the kernel multiple times so we avoid the TDR
 	unsigned long memoryPerKernelExecution = GetMaxMemoryPerKernelExecution(puIndex);
 	unsigned long remainingDataLength = _dataLength;
 
@@ -195,7 +198,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 		//the first parameter of the parallel_for_each specifies the accelerator that will run the code
 		parallel_for_each(accView, d_ext, [=, &d_data](index<1> idx) restrict(amp) {
 			//we need to jump over already processed data
-			// if in on kernel we process X bytes of data, the kernel actualy see X/4 elements because in one int we have 4 chars
+			// if in on kernel we process X bytes of data, the kernel actually see X/4 elements because in one int we have 4 chars
 			int d_pos = (i * memoryPerKernelExecution / 4) + idx[0] * 4;
 			unsigned int matr[4][4];
 
@@ -225,6 +228,7 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 				d_data[d_pos + i] = (matr[i][0] << 0) | (matr[i][1] << 8) | (matr[i][2] << 16) | (matr[i][3] << 24);
 
 		});
+		accView.wait();
 
 		QueryPerformanceCounter(&tKEnd);
 		//calculate memoryPerKernelExecution again to see if we could run the kernel on bigger data chunks
@@ -240,7 +244,6 @@ void AES128AMP::AMPEncrypt(unsigned int puIndex) {
 		remainingDataLength -= currentChunkSize;
 	}
 
-	accView.wait();
 	QueryPerformanceCounter(&tEnd);
 	EncryptionKernelTimings[puIndex].push_back(Helper::ElapsedTime(tStart.QuadPart, tEnd.QuadPart));
 	copy(d_data, (unsigned int*)_data);
@@ -262,12 +265,9 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 
 	};
 
-	for (int i = 0; i < 11 * 16; i++) {
-		unsigned int x = (unsigned int)((unsigned char*)_expandedKey)[i];
-		((int*)constValues.Key)[i] = x;
-	}
+	CopyExpandedKeyToConstValues(constValues);
 
-	//calculate all values we need tu run the kernel multiple times so we avoid the TDR
+	//calculate all values we need to run the kernel multiple times so we avoid the TDR
 	unsigned long memoryPerKernelExecution = GetMaxMemoryPerKernelExecution(puIndex);
 	unsigned long remainingDataLength = _dataLength;
 
@@ -320,6 +320,7 @@ void AES128AMP::AMPDecryption(unsigned int puIndex) {
 				d_data[d_pos + i] = (matr[i][0] << 0) | (matr[i][1] << 8) | (matr[i][2] << 16) | (matr[i][3] << 24);
 
 		});
+		accView.wait();
 
 		QueryPerformanceCounter(&tKEnd);
 		//calculate memoryPerKernelExecution again to see if we could run the kernel on bigger data chunks

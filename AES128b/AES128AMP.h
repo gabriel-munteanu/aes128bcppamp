@@ -19,6 +19,7 @@ private:
 
 	unsigned long GetMaxMemoryPerKernelExecution(unsigned int puIndex);
 	void UpdateMaxMemoryPerKernelExecution(unsigned int puIndex, unsigned long memory);
+	void AES128AMP::CopyExpandedKeyToConstValues(Constants &constValues);
 	void AMPEncrypt(unsigned int puIndex);
 	void AMPDecryption(unsigned int puIndex);
 
