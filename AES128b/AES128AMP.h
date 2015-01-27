@@ -5,6 +5,14 @@
 
 using namespace concurrency;
 
+struct Constants{
+	unsigned int Logtable[256];
+	unsigned int Alogtable[256];
+	unsigned int S[256];
+	unsigned int Si[256];
+	unsigned int Key[11][4][4];
+};
+
 class AES128AMP : public AES128Base {
 
 private:
@@ -19,7 +27,7 @@ private:
 
 	unsigned long GetMaxMemoryPerKernelExecution(unsigned int puIndex);
 	void UpdateMaxMemoryPerKernelExecution(unsigned int puIndex, unsigned long memory);
-	void AES128AMP::CopyExpandedKeyToConstValues(Constants &constValues);
+	void CopyExpandedKeyToConstValues(Constants &constValues);
 	void AMPEncrypt(unsigned int puIndex);
 	void AMPDecryption(unsigned int puIndex);
 

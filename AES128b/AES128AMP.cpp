@@ -5,15 +5,6 @@
 #include <atlconv.h>
 #include <atlbase.h>
 
-
-struct Constants{
-	unsigned int Logtable[256];
-	unsigned int Alogtable[256];
-	unsigned int S[256];
-	unsigned int Si[256];
-	unsigned int Key[11][4][4];
-};
-
 unsigned int AES128AMP::ImplementationId() { return 0; }
 
 
